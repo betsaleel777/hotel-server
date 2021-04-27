@@ -71,15 +71,17 @@ class ChambresController extends Controller
         $chambre = Chambre::find($id);
         $chambre->nom = $request->nom;
         $chambre->categorie = $request->categorie;
+        $dirtyChambre = $chambre->isDirty();
         $chambre->save();
 
         $prix = new PrixChambre(['montant' => $request->montant]);
         $prix->chambre = $chambre->id;
-        if ($prix->isDirty('montant')) {
+        $dirtyPrix = $prix->isDirty('montant');
+        if ($dirtyPrix) {
             $prix->save();
         }
         $retour = [];
-        if ($chambre->isDirty() or $prix->isDirty('montant')) {
+        if ($dirtyChambre or $dirtyPrix) {
             $chambre = Chambre::with(['prixList' => function ($query) {
                 return $query->orderBy('id', 'DESC');
             }, 'categorieLinked'])->find($chambre->id);
@@ -97,8 +99,14 @@ class ChambresController extends Controller
         return response()->json(['message' => $message, 'chambre' => $retour]);
     }
 
-    public function delete()
+    public function delete(int $id)
     {
-
+        $chambre = Chambre::find($id);
+        $chambre->delete();
+        $message = "La chambre $chambre->code a été supprimée avec succès.";
+        return response()->json([
+            'message' => $message,
+            'chambre' => ['code' => $chambre->code, 'id' => $chambre->id],
+        ]);
     }
 }

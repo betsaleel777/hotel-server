@@ -22,6 +22,7 @@ $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
         $router->get('/', 'GestionChambre\ChambresController@getAll');
         $router->post('new', 'GestionChambre\ChambresController@insert');
         $router->put('{id}', 'GestionChambre\ChambresController@update');
+        $router->delete('{id}', 'GestionChambre\ChambresController@delete');
     });
 
     $router->group(['prefix' => 'categories'], function () use ($router) {
