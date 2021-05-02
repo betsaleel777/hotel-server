@@ -22,7 +22,6 @@ class Chambre extends Model
     ];
 
     const OCCUPEE = 'occupée';
-    const RESERVEE = 'reservée';
     const LIBRE = 'libre';
     const MAINTENANCE = 'en maintenance';
 
@@ -37,11 +36,6 @@ class Chambre extends Model
     public function liberer()
     {
         $this->attributes['status'] = self::LIBRE;
-    }
-
-    public function reserver()
-    {
-        $this->attributes['status'] = self::RESERVEE;
     }
 
     public function occuper()
@@ -59,6 +53,11 @@ class Chambre extends Model
         $chiffres = '0123456789';
         $lettres = 'abcdefghijklmnopqrstuvwxyz';
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
+    }
+
+    public function scopeLibre($query)
+    {
+        return $query->where('status', self::LIBRE);
     }
 
     public function categorieLinked()
