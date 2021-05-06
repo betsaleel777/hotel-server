@@ -69,3 +69,12 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 
     });
 });
+
+$router->group(['prefix' => 'restaurant'], function () use ($router) {
+    $router->group(['prefix' => 'produits'], function () use ($router) {
+        $router->get('/', 'Restaurant\ProduitsController@getAll');
+        $router->post('new', 'Restaurant\ProduitsController@insert');
+        $router->put('{id}', 'Restaurant\ProduitsController@update');
+        $router->delete('{id}', 'Restaurant\ProduitsController@delete');
+    });
+});

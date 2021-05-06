@@ -27,6 +27,11 @@ $app->withFacades();
 
 $app->withEloquent();
 
+//cors config
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class
+ ]);
+
 /*
 |--------------------------------------------------------------------------
 | Register Container Bindings
