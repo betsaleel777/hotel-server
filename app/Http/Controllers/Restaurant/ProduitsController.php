@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reception\Client;
 use App\Models\Restaurant\Produit;
 use Illuminate\Http\Request;
 
@@ -31,13 +30,14 @@ class ProduitsController extends Controller
         $produit->genererCode();
         $produit->save();
         $message = "le produit $produit->code a  été crée avec succès.";
-        $produit = Client::find($produit->id);
+        $produit = Produit::find($produit->id);
         return response()->json([
             'message' => $message,
-            'client' => [
+            'produit' => [
                 'id' => $produit->id,
                 'code' => $produit->code,
                 'nom' => $produit->nom,
+                'mesure' => $produit->mesure,
                 'image' => $produit->image,
                 'mode' => $produit->mode,
                 'type' => $produit->type,
@@ -54,7 +54,29 @@ class ProduitsController extends Controller
 
     public function update(int $id, Request $request)
     {
-
+        $this->validate($request, Produit::regles($id));
+        $produit = Produit::find($id);
+        $produit->nom = $request->nom;
+        $produit->mesure = $request->mesure;
+        $produit->mode = $request->mode;
+        $produit->type = $request->type;
+        $produit->seuil = $request->seuil;
+        $produit->save();
+        $message = "le produit $produit->code a  été modifié avec succès.";
+        $produit = Produit::find($produit->id);
+        return response()->json([
+            'message' => $message,
+            'produit' => [
+                'id' => $produit->id,
+                'code' => $produit->code,
+                'nom' => $produit->nom,
+                'mesure' => $produit->mesure,
+                'image' => $produit->image,
+                'mode' => $produit->mode,
+                'type' => $produit->type,
+                'seuil' => $produit->seuil,
+            ],
+        ]);
     }
 
     public function delete(int $id)

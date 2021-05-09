@@ -77,4 +77,12 @@ $router->group(['prefix' => 'restaurant'], function () use ($router) {
         $router->put('{id}', 'Restaurant\ProduitsController@update');
         $router->delete('{id}', 'Restaurant\ProduitsController@delete');
     });
+
+    $router->group(['prefix' => 'achats'], function () use ($router) {
+        $router->get('/', 'Restaurant\AchatsController@getAll');
+        $router->post('new', 'Restaurant\AchatsController@insert');
+        $router->put('{id}', 'Restaurant\AchatsController@update');
+        $router->delete('{id}', 'Restaurant\AchatsController@delete');
+    });
+
 });
