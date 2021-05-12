@@ -21,6 +21,15 @@ class Plat extends Model
         'categorie' => 'required',
     ];
 
+    public static function regles($id)
+    {
+        return [
+            'image' => 'nullable|max:10240',
+            'nom' => 'required|unique:plats,nom,' . $id,
+            'categorie' => 'required',
+        ];
+    }
+
     public function genererCode()
     {
         $chiffres = '0123456789';

@@ -15,7 +15,7 @@ class CreateIngredientsTable extends Migration
     {
         Schema::create('ingredients', function (Blueprint $table) {
             $table->id();
-            $table->unsignedSmallInteger('quantite');
+            $table->unsignedSmallInteger('quantite')->default(0);
             $table->longText('commentaire')->nullable();
             $table->unsignedBigInteger('produit');
             $table->unsignedBigInteger('plat');

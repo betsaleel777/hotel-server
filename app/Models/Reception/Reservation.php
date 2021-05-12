@@ -26,6 +26,7 @@ class Reservation extends Model
     const RESERVEE = 'reservée';
     const OCCUPEE = 'occupée';
     const ANNULEE = 'annulée';
+    const TERMINEE = 'terminée';
 
     public function genererCode()
     {
@@ -42,6 +43,11 @@ class Reservation extends Model
     public function occuper()
     {
         $this->attributes['status'] = self::OCCUPEE;
+    }
+
+    public function terminer()
+    {
+        $this->attributes['status'] = self::TERMINEE;
     }
 
     public function annuler()

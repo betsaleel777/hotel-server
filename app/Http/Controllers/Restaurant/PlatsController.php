@@ -24,7 +24,7 @@ class PlatsController extends Controller
     {
         $plats = Plat::with(['prix' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked'])->get();
+        }, 'categorieLinked', 'produits'])->get();
         return response()->json(['plats' => $plats]);
     }
 
@@ -47,7 +47,7 @@ class PlatsController extends Controller
         $message = "le Plat $plat->code a été crée avec succès.";
         $plat = Plat::with(['prix' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked'])->find($plat->id);
+        }, 'categorieLinked', 'produits'])->find($plat->id);
         return response()->json([
             'message' => $message,
             'plat' => [
@@ -57,7 +57,7 @@ class PlatsController extends Controller
                 'categorie' => $plat->categorie,
                 'categorieNom' => $plat->categorieLinked->nom,
                 'image' => $plat->image,
-                'description' => $plat->mode,
+                'description' => $plat->description,
                 'achat' => $plat->prix[0]->achat,
                 'vente' => $plat->prix[0]->vente,
             ],
@@ -72,13 +72,16 @@ class PlatsController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $this->validate($request, Plat::regles($id));
+        //modification du plat
+        $rules = array_merge(Plat::regles($id), Prix::RULES);
+        $this->validate($request, $rules);
         $plat = Plat::find($id);
         $plat->nom = $request->nom;
         $plat->categorie = $request->categorie;
         $plat->description = $request->description;
         $plat->save();
 
+        //création nouveau prix
         $prix = new Prix(['achat' => $request->achat, 'vente' => $request->vente]);
         $prix->plat = $plat->id;
         $dirtyAchat = $prix->isDirty('achat');
@@ -87,20 +90,25 @@ class PlatsController extends Controller
             $prix->save();
         }
 
+        //modification ingrédients
+        foreach ($request->ingredients as $ingredient) {
+            $plat->produits()->updateExistingPivot($ingredient['id'], ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']], true);
+        }
+
         $message = "le Plat $plat->code a  été modifié avec succès.";
         $plat = Plat::with(['prix' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked'])->find($plat->id);
+        }, 'categorieLinked', 'produits'])->find($plat->id);
         return response()->json([
             'message' => $message,
             'plat' => [
                 'id' => $plat->id,
                 'code' => $plat->code,
                 'nom' => $plat->nom,
-                'categorie' => $plat->mesure,
-                'categorieNom' => $plat->mesure,
+                'categorie' => $plat->categorie,
+                'categorieNom' => $plat->categorieLinked->nom,
                 'image' => $plat->image,
-                'description' => $plat->mode,
+                'description' => $plat->description,
                 'achat' => $plat->prix[0]->achat,
                 'vente' => $plat->prix[0]->vente,
             ],

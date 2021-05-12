@@ -70,6 +70,9 @@ class AttributionsController extends Controller
         $attribution = Attribution::find($id);
         $attribution->liberer();
         $attribution->save();
+        $reservation = Reservation::find($attribution->reservation);
+        $reservation->terminer();
+        $reservation->save();
         $chambre = Chambre::find($attribution->chambre);
         $chambre->liberer();
         $chambre->save();
