@@ -26,7 +26,7 @@ class ProduitsController extends Controller
     public function insert(Request $request)
     {
         $this->validate($request, Produit::RULES);
-        $produit = new Produit($request->all());
+        $produit = new Produit($request->except('image'));
         $produit->genererCode();
         $produit->save();
         $message = "le produit $produit->code a  été crée avec succès.";
@@ -38,7 +38,7 @@ class ProduitsController extends Controller
                 'code' => $produit->code,
                 'nom' => $produit->nom,
                 'mesure' => $produit->mesure,
-                'image' => $produit->image,
+                'image' => [],
                 'mode' => $produit->mode,
                 'type' => $produit->type,
                 'seuil' => $produit->seuil,
@@ -71,7 +71,7 @@ class ProduitsController extends Controller
                 'code' => $produit->code,
                 'nom' => $produit->nom,
                 'mesure' => $produit->mesure,
-                'image' => $produit->image,
+                'image' => [],
                 'mode' => $produit->mode,
                 'type' => $produit->type,
                 'seuil' => $produit->seuil,

@@ -83,6 +83,25 @@ $router->group(['prefix' => 'restaurant'], function () use ($router) {
         $router->post('new', 'Restaurant\AchatsController@insert');
         $router->put('{id}', 'Restaurant\AchatsController@update');
         $router->delete('{id}', 'Restaurant\AchatsController@delete');
+        //other
+        $router->get('en-stock/{id}', 'Restaurant\AchatsController@quantiteStock');
+    });
+
+    $router->group(['prefix' => 'plats'], function () use ($router) {
+        $router->get('/', 'Restaurant\PlatsController@getAll');
+        $router->post('new', 'Restaurant\PlatsController@insert');
+        $router->put('{id}', 'Restaurant\PlatsController@update');
+        $router->delete('{id}', 'Restaurant\PlatsController@delete');
+
+        //other
+        $router->post('/prix-minimal', 'Restaurant\PlatsController@prixMinimal');
+    });
+
+    $router->group(['prefix' => 'categories'], function () use ($router) {
+        $router->get('/', 'Restaurant\CategoriesController@getAll');
+        $router->post('new', 'Restaurant\CategoriesController@insert');
+        $router->put('{id}', 'Restaurant\CategoriesController@update');
+        $router->delete('{id}', 'Restaurant\CategoriesController@delete');
     });
 
 });

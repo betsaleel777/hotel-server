@@ -48,4 +48,9 @@ class Produit extends Model
     {
         return $this->hasMany(Achat::class, 'ingredient');
     }
+
+    public function plats()
+    {
+        return $this->belongsToMany(Plat::class, 'ingredients', 'produit', 'plat')->withPivot('commentaire', 'quantite')->withTimestamps();
+    }
 }

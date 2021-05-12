@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProduitsRestauTable extends Migration
+class CreatePlatsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateProduitsRestauTable extends Migration
      */
     public function up()
     {
-        Schema::create('produits_restau', function (Blueprint $table) {
+        Schema::create('plats', function (Blueprint $table) {
             $table->id();
-            $table->string('nom', 100);
-            $table->unsignedSmallInteger('seuil');
+            $table->string('code', 20);
+            $table->longText('description')->nullable();
+            $table->string('nom', 150)->unique();
             $table->string('image', 255)->nullable();
-            $table->string('mode', 20);
-            $table->string('type', 50);
-            $table->string('code', 20)->unique();
+            $table->unsignedBigInteger('categorie');
+            $table->foreign('categorie')->references('id')->on('categories_plats')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -32,6 +32,6 @@ class CreateProduitsRestauTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('produits_restau');
+        Schema::dropIfExists('plats');
     }
 }

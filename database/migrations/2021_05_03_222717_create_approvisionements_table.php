@@ -17,7 +17,7 @@ class CreateApprovisionementsTable extends Migration
             $table->id();
             $table->string('code', 20);
             $table->unsignedSmallInteger('prix_achat');
-            $table->unsignedSmallInteger('prix_vente')->default(0);
+            $table->unsignedSmallInteger('prix_vente')->nullable()->default(0);
             $table->unsignedSmallInteger('quantite');
             $table->unsignedBigInteger('ingredient');
             $table->foreign('ingredient')->references('id')->on('produits_restau')->onDelete('cascade');

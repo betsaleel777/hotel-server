@@ -89,4 +89,11 @@ class AchatsController extends Controller
         $message = "l' achat $achat->code a été définitivement supprimé avec succès.";
         return response()->json(['message' => $message, 'achat' => ['id' => $achat->id, 'code' => $achat->code]]);
     }
+
+    public function quantiteStock(int $id)
+    {
+        $achats = Achat::where('ingredient', $id)->get();
+        $quantite = $achats->sum('quantite');
+        return response()->json(['quantite' => $quantite]);
+    }
 }

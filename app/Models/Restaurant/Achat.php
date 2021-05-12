@@ -19,7 +19,6 @@ class Achat extends Model
     const RULES = [
         'quantite' => 'required',
         'prix_achat' => 'required',
-        'prix_vente' => 'required',
         'ingredient' => 'required',
     ];
 
