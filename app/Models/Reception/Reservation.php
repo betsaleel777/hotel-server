@@ -60,6 +60,11 @@ class Reservation extends Model
         return $query->where('status', self::RESERVEE);
     }
 
+    public function scopeUsed($query)
+    {
+        return $query->where('status', self::RESERVEE)->orWhere('status', self::OCCUPEE);
+    }
+
     public function chambreLinked()
     {
         return $this->belongsTo(Chambre::class, 'chambre');
@@ -72,7 +77,7 @@ class Reservation extends Model
 
     public function attribution()
     {
-        return $this->belongsTo(Attribution::class, 'reservation');
+        return $this->hasOne(Attribution::class, 'reservation');
     }
 
 }

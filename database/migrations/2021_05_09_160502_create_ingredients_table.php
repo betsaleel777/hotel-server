@@ -19,7 +19,7 @@ class CreateIngredientsTable extends Migration
             $table->longText('commentaire')->nullable();
             $table->unsignedBigInteger('produit');
             $table->unsignedBigInteger('plat');
-            $table->foreign('produit')->references('id')->on('produits_restau')->onDelete('cascade');
+            $table->foreign('produit')->references('id')->on('produits')->onDelete('cascade');
             $table->timestamps();
         });
     }

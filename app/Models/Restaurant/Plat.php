@@ -2,6 +2,7 @@
 
 namespace App\Models\Restaurant;
 
+use App\Models\Stock\Produit;
 use Illuminate\Database\Eloquent\Model;
 
 class Plat extends Model

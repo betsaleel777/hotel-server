@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models\Restaurant;
+namespace App\Models\Stock;
 
+use App\Models\Restaurant\Plat;
 use Illuminate\Database\Eloquent\Model;
 
 class Produit extends Model
@@ -14,7 +15,6 @@ class Produit extends Model
     protected $fillable = [
         'code', 'nom', 'image', 'mode', 'type', 'seuil', 'mesure',
     ];
-    protected $table = 'produits_restau';
 
     const RULES = [
         'nom' => 'required|unique:produits_restau,nom',

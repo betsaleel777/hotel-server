@@ -61,6 +61,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
     $router->group(['prefix' => 'reservations'], function () use ($router) {
         $router->get('/', 'Reception\ReservationsController@getAll');
         $router->get('reserved', 'Reception\ReservationsController@getReserved');
+        $router->get('events', 'Reception\ReservationsController@getEvents');
         $router->get('{id}', 'Reception\ReservationsController@getOne');
         $router->post('new', 'Reception\ReservationsController@insert');
         $router->delete('{id}', 'Reception\ReservationsController@delete');
@@ -70,22 +71,33 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
     });
 });
 
-$router->group(['prefix' => 'restaurant'], function () use ($router) {
+$router->group(['prefix' => 'stock'], function () use ($router) {
     $router->group(['prefix' => 'produits'], function () use ($router) {
-        $router->get('/', 'Restaurant\ProduitsController@getAll');
-        $router->post('new', 'Restaurant\ProduitsController@insert');
-        $router->put('{id}', 'Restaurant\ProduitsController@update');
-        $router->delete('{id}', 'Restaurant\ProduitsController@delete');
+        $router->get('/', 'Stock\ProduitsController@getAll');
+        $router->post('new', 'Stock\ProduitsController@insert');
+        $router->put('{id}', 'Stock\ProduitsController@update');
+        $router->delete('{id}', 'Stock\ProduitsController@delete');
     });
 
     $router->group(['prefix' => 'achats'], function () use ($router) {
-        $router->get('/', 'Restaurant\AchatsController@getAll');
-        $router->post('new', 'Restaurant\AchatsController@insert');
-        $router->put('{id}', 'Restaurant\AchatsController@update');
-        $router->delete('{id}', 'Restaurant\AchatsController@delete');
+        $router->get('/', 'Stock\AchatsController@getAll');
+        $router->post('new', 'Stock\AchatsController@insert');
+        $router->put('{id}', 'Stock\AchatsController@update');
+        $router->delete('{id}', 'Stock\AchatsController@delete');
         //other
-        $router->get('en-stock/{id}', 'Restaurant\AchatsController@quantiteStock');
+        $router->get('en-stock/{id}', 'Stock\AchatsController@quantiteStock');
     });
+
+    $router->group(['prefix' => 'categories'], function () use ($router) {
+        $router->get('/', 'Stock\CategoriesController@getAll');
+        $router->post('new', 'Stock\CategoriesController@insert');
+        $router->put('{id}', 'Stock\CategoriesController@update');
+        $router->delete('{id}', 'Stock\CategoriesController@delete');
+    });
+
+});
+
+$router->group(['prefix' => 'restaurant'], function () use ($router) {
 
     $router->group(['prefix' => 'plats'], function () use ($router) {
         $router->get('/', 'Restaurant\PlatsController@getAll');

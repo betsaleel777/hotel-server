@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterProduitsAddColumnMesure extends Migration
+class AlterProduitsAddColumns extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,10 @@ class AlterProduitsAddColumnMesure extends Migration
     public function up()
     {
         Schema::table('produits', function (Blueprint $table) {
-            $table->string('mesure', 3)->nullable();
+            $table->longText('description')->nullable();
+            $table->string('etagere', 50)->nullable();
+            $table->unsignedBigInteger('categorie')->nullable();
+            $table->foreign('categorie')->references('id')->on('categories_stock')->onDelete('cascade');
         });
     }
 

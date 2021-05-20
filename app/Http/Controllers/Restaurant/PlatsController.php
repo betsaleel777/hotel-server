@@ -2,9 +2,9 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Restaurant\Achat;
 use App\Models\Restaurant\Plat;
 use App\Models\Restaurant\Prix;
+use App\Models\Stock\Achat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 

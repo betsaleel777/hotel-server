@@ -65,7 +65,7 @@ class Attribution extends Model
 
     public function reservationLinked()
     {
-        return $this->hasOne(Reservation::class, 'reservation');
+        return $this->belongsTo(Reservation::class, 'reservation');
     }
 
 }

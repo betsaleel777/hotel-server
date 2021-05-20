@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterProduitsAddColumnMesure extends Migration
+class CreateCategoriesStockTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,10 @@ class AlterProduitsAddColumnMesure extends Migration
      */
     public function up()
     {
-        Schema::table('produits', function (Blueprint $table) {
-            $table->string('mesure', 3)->nullable();
+        Schema::create('categories_stock', function (Blueprint $table) {
+            $table->id();
+            $table->string('nom', 150)->unique();
+            $table->timestamps();
         });
     }
 
@@ -25,8 +27,6 @@ class AlterProduitsAddColumnMesure extends Migration
      */
     public function down()
     {
-        Schema::table('produits', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('categories_stock');
     }
 }

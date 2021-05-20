@@ -25,6 +25,14 @@ class ReservationsController extends Controller
         return response()->json(['reservations' => $reservations]);
     }
 
+    public function getEvents()
+    {
+        $reservations = Reservation::with('clientLinked', 'chambreLinked', 'attribution')->used()->get();
+        $attributions = Attribution::doesntHave('reservationLinked')->with('clientLinked', 'chambreLinked')->get();
+        $events = array_merge($reservations->all(), $attributions->all());
+        return response()->json(['events' => $events]);
+    }
+
     public function getReserved()
     {
         $reservations = Reservation::reserved()->with('clientLinked', 'chambreLinked')->get();
@@ -80,10 +88,12 @@ class ReservationsController extends Controller
 
     public function delete(int $id)
     {
-        $reservation = Reservation::with('chambreLinked')->find($id);
+        $reservation = Reservation::with('chambreLinked', 'attribution')->find($id);
         $reservation->delete();
-        $attribution = Attribution::where('reservation', $reservation->id)->get();
-        $attribution->delete();
+        if (!empty($reservation->attribution)) {
+            $attribution = Attribution::where('reservation', $reservation->id)->first();
+            $attribution->delete();
+        }
         $message = 'la réservation ' . $reservation->code . ' de la chambre ' . $reservation->chambreLinked->nom . ' a été supprimée';
         return response()->json(['message' => $message, 'reservation' => ['id' => $reservation->id, 'code' => $reservation->code]]);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Restaurant;
+namespace App\Models\Stock;
 
 use Illuminate\Database\Eloquent\Model;
 

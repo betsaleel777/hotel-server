@@ -1,8 +1,8 @@
 <?php
-namespace App\Http\Controllers\Restaurant;
+namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
-use App\Models\Restaurant\Achat;
+use App\Models\Stock\Achat;
 use Illuminate\Http\Request;
 
 class AchatsController extends Controller

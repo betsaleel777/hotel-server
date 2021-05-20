@@ -20,7 +20,7 @@ class CreateApprovisionementsTable extends Migration
             $table->unsignedSmallInteger('prix_vente')->nullable()->default(0);
             $table->unsignedSmallInteger('quantite');
             $table->unsignedBigInteger('ingredient');
-            $table->foreign('ingredient')->references('id')->on('produits_restau')->onDelete('cascade');
+            $table->foreign('ingredient')->references('id')->on('produits')->onDelete('cascade');
             $table->timestamps();
         });
     }
