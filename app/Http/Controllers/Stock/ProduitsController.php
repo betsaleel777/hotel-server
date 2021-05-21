@@ -42,7 +42,6 @@ class ProduitsController extends Controller
                 'image' => [],
                 'mode' => $produit->mode,
                 'type' => $produit->type,
-                'seuil' => $produit->seuil,
                 'description' => $produit->description,
                 'etagere' => $produit->etagere,
                 'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],
@@ -64,7 +63,6 @@ class ProduitsController extends Controller
         $produit->mesure = $request->mesure;
         $produit->mode = $request->mode;
         $produit->type = $request->type;
-        $produit->seuil = $request->seuil;
         $produit->etagere = $request->etagere;
         $produit->description = $request->description;
         $produit->categorie = $request->categorie;
@@ -81,7 +79,6 @@ class ProduitsController extends Controller
                 'image' => [],
                 'mode' => $produit->mode,
                 'type' => $produit->type,
-                'seuil' => $produit->seuil,
                 'description' => $produit->description,
                 'etagere' => $produit->etagere,
                 'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],

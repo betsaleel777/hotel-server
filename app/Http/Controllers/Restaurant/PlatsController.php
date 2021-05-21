@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Restaurant\Plat;
 use App\Models\Restaurant\Prix;
 use App\Models\Stock\Achat;
+use App\Models\Stock\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -128,19 +129,26 @@ class PlatsController extends Controller
     {
         $ingredients = new Collection($request->ingredients);
         $ids = array_column($request->ingredients, 'id');
-        $prixAchat = 0;
-        $prixVente = 0;
+
+        // vérification de l'existance d'un approvisionnement pour chaque ingredient de la liste qui compose le plat
         foreach ($ids as $id) {
-            $achats = Achat::where('ingredient', $id)->take(10)->get();
-            if (!empty($achats)) {
-                $prixMoyenAchat = $achats->avg('prix_achat');
-                $prixMoyenVente = $achats->avg('prix_vente');
-                $ingredient = $ingredients->where('id', $id)->first();
-                $prixAchat += $ingredient['quantite'] * $prixMoyenAchat;
-                $prixVente += $ingredient['quantite'] * $prixMoyenVente;
+            $ingredient = Produit::select('nom')->find($id);
+            $achats = Achat::where('ingredient', $id)->first();
+            if (empty($achats)) {
+                $message = "l'ingrédient $ingredient->nom n'a jamais été approvisionné.";
+                return response()->json(['message' => $message], 400);
             }
         }
-        $message = "les prix proposées sont des prix minimaux calculé a partir de la liste des ingrédients.";
-        return response()->json(['achat' => $prixAchat, 'vente' => $prixVente, 'message' => $message]);
+
+        $prixAchat = 0;
+        foreach ($ids as $id) {
+            $achats = Achat::where('ingredient', $id)->orderBy('id', 'DESC')->limit(10)->get();
+            if (!empty($achats)) {
+                $ingredient = $ingredients->where('id', $id)->first();
+                $prixAchat += ($ingredient['quantite'] * $achats->sum('prix_achat')) / $achats->sum('quantite');
+            }
+        }
+        $message = "prix de revient du plat estimé à partir de la liste des ingrédients et du stock.";
+        return response()->json(['achat' => $prixAchat, 'message' => $message]);
     }
 }

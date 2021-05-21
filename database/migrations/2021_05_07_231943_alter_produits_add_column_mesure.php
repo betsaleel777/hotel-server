@@ -14,7 +14,7 @@ class AlterProduitsAddColumnMesure extends Migration
     public function up()
     {
         Schema::table('produits', function (Blueprint $table) {
-            $table->string('mesure', 3)->nullable();
+            $table->string('mesure', 20)->nullable();
         });
     }
 

@@ -16,7 +16,6 @@ class CreateProduitsTable extends Migration
         Schema::create('produits', function (Blueprint $table) {
             $table->id();
             $table->string('nom', 100);
-            $table->unsignedSmallInteger('seuil');
             $table->string('image', 255)->nullable();
             $table->string('mode', 20);
             $table->string('type', 50);

@@ -55,30 +55,6 @@ class AchatsController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $this->validate($request, Achat::regles($id));
-        $achat = Achat::find($id);
-        $achat->nom = $request->nom;
-        $achat->mesure = $request->mesure;
-        $achat->mode = $request->mode;
-        $achat->type = $request->type;
-        $achat->seuil = $request->seuil;
-        $achat->save();
-        $message = "l' achat $achat->code a  été modifié avec succès.";
-        $achat = Achat::with('produit')->find($achat->id);
-        return response()->json([
-            'message' => $message,
-            'achat' => [
-                'id' => $achat->id,
-                'code' => $achat->code,
-                'quantite' => $achat->quantite,
-                'prix_achat' => $achat->prix_achat,
-                'prix_vente' => $achat->prix_vente,
-                'ingredient' => $achat->ingredient,
-                'nom' => $achat->produit->nom,
-                'mesure' => $achat->produit->mesure,
-                'type' => $achat->produit->type,
-            ],
-        ]);
 
     }
 

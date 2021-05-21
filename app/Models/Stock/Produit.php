@@ -13,7 +13,7 @@ class Produit extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'nom', 'image', 'mode', 'type', 'seuil', 'mesure', 'description', 'etagere', 'categorie',
+        'code', 'nom', 'image', 'mode', 'type', 'mesure', 'description', 'etagere', 'categorie',
     ];
 
     const RULES = [
@@ -21,9 +21,8 @@ class Produit extends Model
         'image' => 'nullable|max:10240',
         'type' => 'required',
         'mode' => 'required',
-        'seuil' => 'required|numeric',
         'categorie' => 'required',
-        'mesure' => 'nullable|required_if:mode,==,poids',
+        'mesure' => 'nullable|max:20|required_if:mode,==,poids',
     ];
 
     public static function regles(int $id)
@@ -33,8 +32,7 @@ class Produit extends Model
             'image' => 'nullable|max:10240',
             'type' => 'required',
             'mode' => 'required',
-            'seuil' => 'required|numeric',
-            'mesure' => 'nullable|required_if:mode,==,poids',
+            'mesure' => 'nullable|max:20|required_if:mode,==,poids',
         ];
     }
 

@@ -12,7 +12,7 @@ class Achat extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'prix_vente', 'prix_achat', 'quantite', 'ingredient',
+        'code', 'prix_achat', 'quantite', 'ingredient',
     ];
     protected $table = 'approvisionements';
 
