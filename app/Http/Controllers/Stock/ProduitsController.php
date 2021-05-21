@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
+use App\Models\Stock\Categorie;
 use App\Models\Stock\Produit;
 use Illuminate\Http\Request;
 
@@ -19,18 +20,18 @@ class ProduitsController extends Controller
 
     public function getAll()
     {
-        $produits = Produit::get();
+        $produits = Produit::with('categorieLinked')->get();
         return response()->json(['produits' => $produits]);
     }
 
     public function insert(Request $request)
     {
-        $this->validate($request, Produit::RULES);
+        $this->validate($request, Produit::RULES, Categorie::RULES);
         $produit = new Produit($request->except('image'));
         $produit->genererCode();
         $produit->save();
         $message = "le produit $produit->code a  été crée avec succès.";
-        $produit = Produit::find($produit->id);
+        $produit = Produit::with('categorieLinked')->find($produit->id);
         return response()->json([
             'message' => $message,
             'produit' => [
@@ -42,6 +43,9 @@ class ProduitsController extends Controller
                 'mode' => $produit->mode,
                 'type' => $produit->type,
                 'seuil' => $produit->seuil,
+                'description' => $produit->description,
+                'etagere' => $produit->etagere,
+                'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],
             ],
         ]);
     }
@@ -61,9 +65,12 @@ class ProduitsController extends Controller
         $produit->mode = $request->mode;
         $produit->type = $request->type;
         $produit->seuil = $request->seuil;
+        $produit->etagere = $request->etagere;
+        $produit->description = $request->description;
+        $produit->categorie = $request->categorie;
         $produit->save();
         $message = "le produit $produit->code a  été modifié avec succès.";
-        $produit = Produit::find($produit->id);
+        $produit = Produit::with('categorieLinked')->find($produit->id);
         return response()->json([
             'message' => $message,
             'produit' => [
@@ -75,6 +82,9 @@ class ProduitsController extends Controller
                 'mode' => $produit->mode,
                 'type' => $produit->type,
                 'seuil' => $produit->seuil,
+                'description' => $produit->description,
+                'etagere' => $produit->etagere,
+                'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],
             ],
         ]);
     }

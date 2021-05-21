@@ -21,6 +21,11 @@ class Categorie extends Model
         'nom' => 'required|unique:categories_stock,nom',
     ];
 
+    public function produits()
+    {
+        return $this->hasMany(Produit::class, 'categorie');
+    }
+
     public function plats()
     {
         return $this->hasMany(Plat::class, 'categorie');

@@ -13,22 +13,23 @@ class Produit extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'nom', 'image', 'mode', 'type', 'seuil', 'mesure',
+        'code', 'nom', 'image', 'mode', 'type', 'seuil', 'mesure', 'description', 'etagere', 'categorie',
     ];
 
     const RULES = [
-        'nom' => 'required|unique:produits_restau,nom',
+        'nom' => 'required|unique:produits,nom',
         'image' => 'nullable|max:10240',
         'type' => 'required',
         'mode' => 'required',
         'seuil' => 'required|numeric',
+        'categorie' => 'required',
         'mesure' => 'nullable|required_if:mode,==,poids',
     ];
 
     public static function regles(int $id)
     {
         return [
-            'nom' => 'required|unique:produits_restau,nom,' . $id,
+            'nom' => 'required|unique:produits,nom,' . $id,
             'image' => 'nullable|max:10240',
             'type' => 'required',
             'mode' => 'required',
@@ -47,6 +48,11 @@ class Produit extends Model
     public function achats()
     {
         return $this->hasMany(Achat::class, 'ingredient');
+    }
+
+    public function categorieLinked()
+    {
+        return $this->belongsTo(Categorie::class, 'categorie');
     }
 
     public function plats()
