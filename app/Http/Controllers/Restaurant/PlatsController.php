@@ -58,6 +58,7 @@ class PlatsController extends Controller
                 'categorie' => $plat->categorie,
                 'categorieNom' => $plat->categorieLinked->nom,
                 'image' => $plat->image,
+                'produits' => $plat->produits,
                 'description' => $plat->description,
                 'achat' => $plat->prix[0]->achat,
                 'vente' => $plat->prix[0]->vente,
@@ -81,7 +82,6 @@ class PlatsController extends Controller
         $plat->categorie = $request->categorie;
         $plat->description = $request->description;
         $plat->save();
-
         //création nouveau prix
         $prix = new Prix(['achat' => $request->achat, 'vente' => $request->vente]);
         $prix->plat = $plat->id;
@@ -92,11 +92,13 @@ class PlatsController extends Controller
         }
 
         //modification ingrédients
+        $toSync = [];
         foreach ($request->ingredients as $ingredient) {
-            $plat->produits()->updateExistingPivot($ingredient['id'], ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']], true);
+            $toSync[$ingredient['id']] = ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']];
         }
-
-        $message = "le Plat $plat->code a  été modifié avec succès.";
+        //return response()->json($toSync, 400);
+        $plat->produits()->sync($toSync);
+        $message = "Le plat $plat->code a  été modifié avec succès.";
         $plat = Plat::with(['prix' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'categorieLinked', 'produits'])->find($plat->id);
@@ -109,6 +111,7 @@ class PlatsController extends Controller
                 'categorie' => $plat->categorie,
                 'categorieNom' => $plat->categorieLinked->nom,
                 'image' => $plat->image,
+                'produits' => $plat->produits,
                 'description' => $plat->description,
                 'achat' => $plat->prix[0]->achat,
                 'vente' => $plat->prix[0]->vente,

@@ -72,6 +72,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 });
 
 $router->group(['prefix' => 'stock'], function () use ($router) {
+
     $router->group(['prefix' => 'produits'], function () use ($router) {
         $router->get('/', 'Stock\ProduitsController@getAll');
         $router->post('new', 'Stock\ProduitsController@insert');
@@ -95,12 +96,24 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->delete('{id}', 'Stock\CategoriesController@delete');
     });
 
+    $router->group(['prefix' => 'demandes'], function () use ($router) {
+        $router->get('/', 'Stock\DemandesController@getAll');
+        $router->get('reject/{id}', 'Stock\DemandesController@reject');
+        $router->get('deliver/{id}', 'Stock\DemandesController@deliver');
+        $router->post('new', 'Stock\DemandesController@insert');
+        $router->post('cloner', 'Stock\DemandesController@cloner');
+        $router->put('{id}', 'Stock\DemandesController@update');
+        $router->put('accept/{id}', 'Stock\DemandesController@accept');
+        $router->delete('{id}', 'Stock\DemandesController@delete');
+    });
+
 });
 
 $router->group(['prefix' => 'restaurant'], function () use ($router) {
 
     $router->group(['prefix' => 'plats'], function () use ($router) {
         $router->get('/', 'Restaurant\PlatsController@getAll');
+        $router->get('/{id}', 'Restaurant\PlatsController@getOne');
         $router->post('new', 'Restaurant\PlatsController@insert');
         $router->put('{id}', 'Restaurant\PlatsController@update');
         $router->delete('{id}', 'Restaurant\PlatsController@delete');
@@ -111,9 +124,21 @@ $router->group(['prefix' => 'restaurant'], function () use ($router) {
 
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->get('/', 'Restaurant\CategoriesController@getAll');
+        $router->get('/{id}', 'Restaurant\CategoriesController@getOne');
         $router->post('new', 'Restaurant\CategoriesController@insert');
         $router->put('{id}', 'Restaurant\CategoriesController@update');
         $router->delete('{id}', 'Restaurant\CategoriesController@delete');
     });
 
+});
+
+$router->group(['prefix' => 'parametre'], function () use ($router) {
+
+    $router->group(['prefix' => 'departements'], function () use ($router) {
+        $router->get('/', 'Parametre\DepartementsController@getAll');
+        $router->get('/{name}', 'Parametre\DepartementsController@getByName');
+        $router->post('new', 'Parametre\DepartementsController@insert');
+        $router->put('{id}', 'Parametre\DepartementsController@update');
+        $router->delete('{id}', 'Parametre\DepartementsController@delete');
+    });
 });
