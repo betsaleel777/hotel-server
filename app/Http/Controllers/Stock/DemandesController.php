@@ -18,20 +18,24 @@ class DemandesController extends Controller
 
     }
 
-    private static function checkDemande(array $articles)
+    private static function checkDemande(array $articles, $sujet = 'demande')
     {
         $ids = array_column($articles, 'id');
         $badProduct = null;
         $achats = DB::select(DB::Raw(
             "SELECT IFNULL(AVG(a.prix_achat),0)  AS prix,IFNULL(SUM(a.quantite),0) AS quantite,p.id,p.nom
-             FROM motel.approvisionements AS a RIGHT JOIN motel.produits
-             AS p ON p.id=a.ingredient  WHERE p.id IN (" . implode(',', $ids) . ") GROUP BY a.ingredient,p.id,p.nom"
+             FROM approvisionements AS a RIGHT JOIN produits AS p ON p.id=a.ingredient  WHERE p.id
+             IN (" . implode(',', $ids) . ") GROUP BY a.ingredient,p.id,p.nom"
         ));
         foreach ($articles as $article) {
             $casser = true;
             foreach ($achats as $achat) {
                 if ($article['id'] === $achat->id) {
-                    $casser = (int) $article['pivot']['quantite'] > (int) $achat->quantite;
+                    if ($sujet === 'demande') {
+                        $casser = (int) $article['pivot']['quantite'] > (int) $achat->quantite;
+                    } else {
+                        $casser = (int) $article['quantite'] > (int) $achat->quantite;
+                    }
                     if ($casser) {
                         $badProduct = $achat->nom;
                         break;
@@ -79,6 +83,26 @@ class DemandesController extends Controller
         }
         $message = "La demande, $demande->code a été crée avec succes.";
         return response()->json(self::returning($demande->id, $message));
+    }
+
+    public function insertSortie(Request $request)
+    {
+        $this->validate($request, Demande::RULES);
+        $badProduct = self::checkDemande($request->articles, 'sortie');
+        if (empty($badProduct)) {
+            $demande = new Demande($request->all());
+            $demande->livrer();
+            $demande->save();
+            foreach ($request->articles as $article) {
+                $demande->produits()->attach($article['id'], ['quantite' => $article['quantite']]);
+            }
+            $message = "La sortie de stock, $demande->code a été crée avec succes.";
+            return response()->json(self::returning($demande->id, $message));
+
+        } else {
+            $message = "La quantité du produit $badProduct a dépassé le stock disponible.";
+            return response()->json(['message' => $message], 400);
+        }
     }
 
     public function cloner(request $request)
@@ -167,6 +191,16 @@ class DemandesController extends Controller
         $demande->save();
         $message = "La demande: $demande->code a été livrée avec succès.";
         return response()->json(self::returning($id, $message));
+    }
+
+    public function inventaire(int $departement)
+    {
+        $inventaire = DB::select(DB::Raw(
+            "SELECT p.id,p.nom, p.code, p.mesure, SUM(pd.quantite) AS quantite,d.departement FROM motel.produits_demandes pd
+             INNER JOIN motel.demandes d ON d.id=pd.demande INNER JOIN motel.produits p ON p.id=pd.produit
+             WHERE d.departement=$departement AND d.status = 'livrée' GROUP BY p.id,p.nom,p.code,p.mesure,d.departement"
+        ));
+        return response()->json(['inventaire' => $inventaire]);
     }
 
     public function update(Request $request)

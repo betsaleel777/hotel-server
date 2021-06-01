@@ -3,7 +3,9 @@ namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stock\Achat;
+use App\Models\Stock\Produit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AchatsController extends Controller
 {
@@ -19,7 +21,11 @@ class AchatsController extends Controller
 
     public function getAll()
     {
-        $achats = Achat::with('produit')->get();
+        $achats = DB::select(DB::Raw(
+            "SELECT IFNULL(SUM(a.quantite),0) AS quantite,p.id AS produit,p.nom,p.code,p.mesure
+             FROM approvisionements AS a RIGHT JOIN produits AS p ON p.id=a.ingredient
+             GROUP BY a.ingredient,p.id,p.nom,p.code,p.mesure ORDER BY quantite DESC"
+        ));
         return response()->json(['achats' => $achats]);
     }
 
@@ -51,6 +57,13 @@ class AchatsController extends Controller
     {
         $achat = Achat::find($id);
         return response()->json(['achat' => $achat]);
+    }
+
+    public function getFromProduit(int $id)
+    {
+        $achats = Achat::where('ingredient', $id)->orderBy('id', 'DESC')->get();
+        $produit = Produit::find($id);
+        return response()->json(['achats' => $achats, 'produit' => $produit]);
     }
 
     public function update(int $id, Request $request)

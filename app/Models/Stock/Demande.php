@@ -31,6 +31,7 @@ class Demande extends Model
     ];
     const RULES = [
         'titre' => 'required|max:150|unique:demandes,titre',
+        'departement' => 'required',
     ];
 
     const REJETTEE = 'rejettée';
@@ -43,6 +44,7 @@ class Demande extends Model
     {
         return [
             'titre' => 'required|max:150|unique:demandes,titre,' . $id,
+            'departement' => 'required',
         ];
     }
 

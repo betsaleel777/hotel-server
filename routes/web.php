@@ -87,6 +87,7 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->delete('{id}', 'Stock\AchatsController@delete');
         //other
         $router->get('en-stock/{id}', 'Stock\AchatsController@quantiteStock');
+        $router->get('produit/{id}', 'Stock\AchatsController@getFromProduit');
     });
 
     $router->group(['prefix' => 'categories'], function () use ($router) {
@@ -100,7 +101,9 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->get('/', 'Stock\DemandesController@getAll');
         $router->get('reject/{id}', 'Stock\DemandesController@reject');
         $router->get('deliver/{id}', 'Stock\DemandesController@deliver');
+        $router->get('inventaire/{departement}', 'Stock\DemandesController@inventaire');
         $router->post('new', 'Stock\DemandesController@insert');
+        $router->post('sortie', 'Stock\DemandesController@insertSortie');
         $router->post('cloner', 'Stock\DemandesController@cloner');
         $router->put('{id}', 'Stock\DemandesController@update');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');

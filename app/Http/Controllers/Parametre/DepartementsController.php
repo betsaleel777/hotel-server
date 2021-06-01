@@ -19,7 +19,7 @@ class DepartementsController extends Controller
 
     public function getAll()
     {
-        $departements = Departement::select('id', 'nom')->get();
+        $departements = Departement::get();
         return response()->json(['departements' => $departements]);
     }
 
