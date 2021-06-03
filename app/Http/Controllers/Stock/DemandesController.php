@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stock\Demande;
+use App\Models\Stock\Sortie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -64,7 +65,6 @@ class DemandesController extends Controller
                 'departement' => $demande->departementLinked->id,
             ],
         ];
-
     }
 
     public function getAll()
@@ -85,71 +85,6 @@ class DemandesController extends Controller
         return response()->json(self::returning($demande->id, $message));
     }
 
-    public function insertSortie(Request $request)
-    {
-        $this->validate($request, Demande::RULES);
-        $badProduct = self::checkDemande($request->articles, 'sortie');
-        if (empty($badProduct)) {
-            $demande = new Demande($request->all());
-            $demande->livrer();
-            $demande->save();
-            foreach ($request->articles as $article) {
-                $demande->produits()->attach($article['id'], ['quantite' => $article['quantite']]);
-            }
-            $message = "La sortie de stock, $demande->code a été crée avec succes.";
-            return response()->json(self::returning($demande->id, $message));
-
-        } else {
-            $message = "La quantité du produit $badProduct a dépassé le stock disponible.";
-            return response()->json(['message' => $message], 400);
-        }
-    }
-
-    public function cloner(request $request)
-    {
-        $demande = new Demande($request->all());
-        $demande->precedant = $request->id;
-        $titre = explode('--', $demande->titre);
-        if (isset($titre[1])) {
-            $number = $titre[1] + 1;
-            $demande->titre = $titre[0] . '--' . $number;
-        } else {
-            $demande->titre = $request->titre . '--1';
-        }
-        $demande->save();
-        foreach ($request->produits as $article) {
-            $demande->produits()->attach($article['id'], ['quantite' => $article['pivot']['quantite']]);
-        }
-        $demandeOld = Demande::with('departementLinked', 'produits')->find($demande->precedant);
-        $demandeOld->relancer();
-        $demandeOld->save();
-        $message = "La demande: $request->code, a bien été relancée à partir de la demande: $demande->code.";
-        $demande = Demande::with('departementlinked', 'produits')->find($demande->id);
-        $demandeOld = Demande::with('departementlinked', 'produits')->find($demande->precedant);
-        return response()->json([
-            'message' => $message,
-            'demande' => [
-                'id' => $demande->id,
-                'titre' => $demande->titre,
-                'status' => $demande->status,
-                'code' => $demande->code,
-                'produits' => $demande->produits,
-                'created_at' => $demande->created_at,
-                'departement' => $demande->departementLinked->id,
-            ],
-            'old' => [
-                'id' => $demandeOld->id,
-                'titre' => $demandeOld->titre,
-                'status' => $demandeOld->status,
-                'code' => $demandeOld->code,
-                'produits' => $demandeOld->produits,
-                'created_at' => $demandeOld->created_at,
-                'departement' => $demandeOld->departementLinked->id,
-            ],
-        ]);
-
-    }
-
     public function getOne(int $id)
     {
 
@@ -158,20 +93,15 @@ class DemandesController extends Controller
     public function accept(int $id, Request $request)
     {
         $demande = Demande::find($id);
-        $badProduct = self::checkDemande($request->articles);
-        if (empty($badProduct)) {
-            $toSync = [];
-            foreach ($request->articles as $article) {
-                $toSync[$article['id']] = ['quantite' => $article['pivot']['quantite']];
-            }
-            $demande->produits()->sync($toSync);
-            $demande->accepter();
-            $demande->save();
-            $message = "La demande, $demande->code a été acceptée.";
-        } else {
-            $message = "La quantité du produit $badProduct a dépassé le stock disponible.";
-            return response()->json(['message' => $message], 400);
+        $demande->livrer();
+        $demande->save();
+        $sortie = new Sortie(titre:$demande->titre);
+        $sortie->demande = $demande->id;
+        $sortie->save();
+        foreach ($request->articles as $article) {
+            $sortie->produits()->attach($article['produit'], ['quantite' => $article['valeur'], 'demandees' => $article['quantite']]);
         }
+        $message = "La demande, $demande->code a été livrée.\n La sortie de stock $sortie->code a été crée avec succès.";
         return response()->json(self::returning($id, $message));
     }
 
@@ -182,6 +112,44 @@ class DemandesController extends Controller
         $demande->save();
         $message = "La demande, $demande->code a été rejetée.";
         return response()->json(self::returning($id, $message));
+    }
+
+    public function traitement(int $id)
+    {
+        $demande = Demande::find($id);
+        //encaissement à prendre en compte ici
+        $articlesWithoutDelivery = DB::select(DB::Raw(
+            "SELECT pd.produit,pd.quantite,p.nom,p.code,p.mesure,SUM(a.quantite) AS disponible FROM produits_demandes pd
+             INNER JOIN produits p ON p.id=pd.produit INNER JOIN approvisionements a ON a.ingredient = pd.produit
+             WHERE pd.demande = $id GROUP BY a.ingredient,pd.produit,pd.quantite,p.nom,p.code,p.mesure"
+        ));
+        $articlesDelivered = DB::select(DB::Raw(
+            "SELECT pd.produit,p.nom,p.code,p.mesure,SUM(pd.quantite) AS quantite FROM motel.produits_demandes pd
+             INNER JOIN produits p ON p.id=pd.produit INNER JOIN demandes d ON pd.demande = d.id
+             WHERE d.status = 'livrée' GROUP BY pd.produit,p.nom,p.code,p.mesure"
+        ));
+        $articles = [];
+        $produitsDelivered = array_column($articlesDelivered, 'produit');
+        foreach ($articlesWithoutDelivery as $withoutDelivery) {
+            if (in_array($withoutDelivery->produit, $produitsDelivered)) {
+                foreach ($articlesDelivered as $delivered) {
+                    if ($delivered->produit === $withoutDelivery->produit) {
+                        $articles[] = [
+                            'produit' => $delivered->produit,
+                            'quantite' => $withoutDelivery->quantite,
+                            'nom' => $delivered->nom,
+                            'code' => $delivered->code,
+                            'mesure' => $delivered->mesure,
+                            'disponible' => $withoutDelivery->disponible - $delivered->quantite,
+                        ];
+                        break;
+                    }
+                }
+            } else {
+                $articles[] = $withoutDelivery;
+            }
+        }
+        return response()->json(['articles' => $articles]);
     }
 
     public function deliver(int $id)
@@ -196,8 +164,8 @@ class DemandesController extends Controller
     public function inventaire(int $departement)
     {
         $inventaire = DB::select(DB::Raw(
-            "SELECT p.id,p.nom, p.code, p.mesure, SUM(pd.quantite) AS quantite,d.departement FROM motel.produits_demandes pd
-             INNER JOIN motel.demandes d ON d.id=pd.demande INNER JOIN motel.produits p ON p.id=pd.produit
+            "SELECT p.id,p.nom, p.code, p.mesure, SUM(pd.quantite) AS quantite,d.departement FROM produits_demandes pd
+             INNER JOIN demandes d ON d.id=pd.demande INNER JOIN produits p ON p.id=pd.produit
              WHERE d.departement=$departement AND d.status = 'livrée' GROUP BY p.id,p.nom,p.code,p.mesure,d.departement"
         ));
         return response()->json(['inventaire' => $inventaire]);

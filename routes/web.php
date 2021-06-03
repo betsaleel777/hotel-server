@@ -102,11 +102,19 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->get('reject/{id}', 'Stock\DemandesController@reject');
         $router->get('deliver/{id}', 'Stock\DemandesController@deliver');
         $router->get('inventaire/{departement}', 'Stock\DemandesController@inventaire');
+        $router->get('sorties', 'Stock\DemandesController@sorties');
+        $router->get('traitement/{id}', 'Stock\DemandesController@traitement');
         $router->post('new', 'Stock\DemandesController@insert');
         $router->post('sortie', 'Stock\DemandesController@insertSortie');
-        $router->post('cloner', 'Stock\DemandesController@cloner');
         $router->put('{id}', 'Stock\DemandesController@update');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');
+        $router->delete('{id}', 'Stock\DemandesController@delete');
+    });
+
+    $router->group(['prefix' => 'sorties'], function () use ($router) {
+        $router->get('/', 'Stock\SortiesController@getAll');
+        $router->put('{id}', 'Stock\DemandesController@update');
+        $router->post('new', 'Stock\DemandesController@insert');
         $router->delete('{id}', 'Stock\DemandesController@delete');
     });
 

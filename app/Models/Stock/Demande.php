@@ -27,7 +27,7 @@ class Demande extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'departement', 'status', 'precedant', 'titre',
+        'code', 'departement', 'status', 'titre',
     ];
     const RULES = [
         'titre' => 'required|max:150|unique:demandes,titre',
@@ -38,7 +38,6 @@ class Demande extends Model
     const ACCEPTEE = 'acceptée';
     const LIVREE = 'livrée';
     const EN_COURS = 'en cours';
-    const RELANCEE = 'relancée';
 
     public static function regles(int $id)
     {
@@ -75,14 +74,19 @@ class Demande extends Model
         $this->attributes['status'] = self::LIVREE;
     }
 
-    public function relancer()
+    public function scopeSorties($query)
     {
-        $this->attributes['status'] = self::RELANCEE;
+        return $query->where('status', 'livrée');
     }
 
     public function departementLinked()
     {
         return $this->belongsTo(Departement::class, 'departement');
+    }
+
+    public function sortie()
+    {
+        return $this->hasOne(Sortie::class, 'demande');
     }
 
     public function produits()

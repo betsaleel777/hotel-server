@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDemandesTable extends Migration
+class CreateSortiesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateDemandesTable extends Migration
      */
     public function up()
     {
-        Schema::create('demandes', function (Blueprint $table) {
+        Schema::create('sorties', function (Blueprint $table) {
             $table->id();
             $table->string('code', 20)->unique();
-            $table->string('status', 50);
-            $table->unsignedBigInteger('departement');
-            $table->foreign('departement')->references('id')->on('departements')->onDelete('cascade');
+            $table->string('titre', 150)->unique();
+            $table->unsignedBigInteger('demande');
+            $table->foreign('demande')->references('id')->on('demandes')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateDemandesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('demandes');
+        Schema::dropIfExists('sorties');
     }
 }
