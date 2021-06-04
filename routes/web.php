@@ -99,23 +99,18 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
 
     $router->group(['prefix' => 'demandes'], function () use ($router) {
         $router->get('/', 'Stock\DemandesController@getAll');
+        $router->get('/{departement}', 'Stock\DemandesController@getByDepartement');
         $router->get('reject/{id}', 'Stock\DemandesController@reject');
-        $router->get('deliver/{id}', 'Stock\DemandesController@deliver');
         $router->get('inventaire/{departement}', 'Stock\DemandesController@inventaire');
-        $router->get('sorties', 'Stock\DemandesController@sorties');
         $router->get('traitement/{id}', 'Stock\DemandesController@traitement');
         $router->post('new', 'Stock\DemandesController@insert');
-        $router->post('sortie', 'Stock\DemandesController@insertSortie');
-        $router->put('{id}', 'Stock\DemandesController@update');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');
-        $router->delete('{id}', 'Stock\DemandesController@delete');
     });
 
     $router->group(['prefix' => 'sorties'], function () use ($router) {
         $router->get('/', 'Stock\SortiesController@getAll');
         $router->put('{id}', 'Stock\DemandesController@update');
         $router->post('new', 'Stock\DemandesController@insert');
-        $router->delete('{id}', 'Stock\DemandesController@delete');
     });
 
 });
@@ -139,6 +134,26 @@ $router->group(['prefix' => 'restaurant'], function () use ($router) {
         $router->post('new', 'Restaurant\CategoriesController@insert');
         $router->put('{id}', 'Restaurant\CategoriesController@update');
         $router->delete('{id}', 'Restaurant\CategoriesController@delete');
+    });
+
+});
+
+$router->group(['prefix' => 'bar'], function () use ($router) {
+
+    $router->group(['prefix' => 'cocktails'], function () use ($router) {
+        $router->get('/', 'Bar\CocktailsController@getAll');
+        $router->get('/{id}', 'Bar\CocktailsController@getOne');
+        $router->post('new', 'Bar\CocktailsController@insert');
+        $router->put('{id}', 'Bar\CocktailsController@update');
+        $router->delete('{id}', 'Bar\CocktailsController@delete');
+    });
+
+    $router->group(['prefix' => 'tournees'], function () use ($router) {
+        $router->get('/', 'Bar\TourneesController@getAll');
+        $router->get('/{id}', 'Bar\TourneesController@getOne');
+        $router->post('new', 'Bar\TourneesController@insert');
+        $router->put('{id}', 'Bar\TourneesController@update');
+        $router->delete('{id}', 'Bar\TourneesController@delete');
     });
 
 });

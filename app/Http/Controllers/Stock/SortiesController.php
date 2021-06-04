@@ -37,7 +37,7 @@ class SortiesController extends Controller
 
     public function getAll()
     {
-        $sorties = Sortie::with('produits', 'demandeLinked')->get();
+        $sorties = Sortie::with('produits', 'demandeLinked.departementLinked')->get();
         return response()->json(['sorties' => $sorties]);
     }
 

@@ -72,6 +72,11 @@ class DemandesController extends Controller
         $demandes = Demande::with('produits', 'departementLinked')->get();
         return response()->json(['demandes' => $demandes]);
     }
+    public function getByDepartement(int $departement)
+    {
+        $demandes = Demande::with('produits', 'departementLinked')->where('departement', $departement)->get();
+        return response()->json(['demandes' => $demandes]);
+    }
 
     public function insert(Request $request)
     {
@@ -152,15 +157,6 @@ class DemandesController extends Controller
         return response()->json(['articles' => $articles]);
     }
 
-    public function deliver(int $id)
-    {
-        $demande = Demande::find($id);
-        $demande->livrer();
-        $demande->save();
-        $message = "La demande: $demande->code a été livrée avec succès.";
-        return response()->json(self::returning($id, $message));
-    }
-
     public function inventaire(int $departement)
     {
         $inventaire = DB::select(DB::Raw(
@@ -169,15 +165,5 @@ class DemandesController extends Controller
              WHERE d.departement=$departement AND d.status = 'livrée' GROUP BY p.id,p.nom,p.code,p.mesure,d.departement"
         ));
         return response()->json(['inventaire' => $inventaire]);
-    }
-
-    public function update(Request $request)
-    {
-
-    }
-
-    public function delete()
-    {
-
     }
 }
