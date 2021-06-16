@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProduitsSortiesTable extends Migration
+class CreateProduitsEncaissementsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,13 @@ class CreateProduitsSortiesTable extends Migration
      */
     public function up()
     {
-        Schema::create('produits_sorties', function (Blueprint $table) {
+        Schema::create('produits_encaissements', function (Blueprint $table) {
             $table->id();
-            $table->unsignedMediumInteger('quantite');
-            $table->unsignedMediumInteger('demandees')->nullable();
+            $table->unsignedBigInteger('encaissement');
             $table->unsignedBigInteger('produit');
-            $table->unsignedBigInteger('sortie');
-            $table->foreign('sortie')->references('id')->on('sorties')->onDelete('cascade');
+            $table->unsignedDouble('quantite');
+            $table->unsignedMediumInteger('prix_vente');
+            $table->foreign('encaissement')->references('id')->on('encaissements')->onDelete('cascade');
             $table->foreign('produit')->references('id')->on('produits')->onDelete('cascade');
             $table->timestamps();
         });
@@ -32,6 +32,6 @@ class CreateProduitsSortiesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('produits_sorties');
+        Schema::dropIfExists('produits_encaissements');
     }
 }

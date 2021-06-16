@@ -21,7 +21,9 @@ class ReservationsController extends Controller
 
     public function getAll()
     {
-        $reservations = Reservation::with('clientLinked', 'chambreLinked')->get();
+        $reservations = Reservation::with(['clientLinked', 'chambreLinked.prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->get();
         return response()->json(['reservations' => $reservations]);
     }
 

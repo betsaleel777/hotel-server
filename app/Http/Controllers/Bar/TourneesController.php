@@ -36,13 +36,13 @@ class TourneesController extends Controller
         $tournee->genererCode();
         empty($tournee->titre) ? $tournee->titre = $produit->nom . ' tournée' : $tournee->titre = $request->titre;
         $tournee->save();
-        //enregistrement dans la table des prix de chambre
+        // enregistrement dans la table des prix de chambre
         $prix = new Prix(['montant' => $request->montant, 'tournee' => $tournee->id]);
         $prix->save();
 
         $tournee = Tournee::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }, 'prixList'])->find($tournee->id);
+        }, 'produitLinked'])->find($tournee->id);
         $message = "La Tournee $tournee->code ($tournee->titre) a été crée avec succes.";
         return response()->json([
             'message' => $message,
@@ -81,7 +81,7 @@ class TourneesController extends Controller
 
         $tournee = Tournee::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }, 'prixList'])->find($tournee->id);
+        }, 'produitLinked'])->find($tournee->id);
         $message = "La Tournee $tournee->code ($tournee->titre) a été modifiée avec succes.";
         return response()->json([
             'message' => $message,

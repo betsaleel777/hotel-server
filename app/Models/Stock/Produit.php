@@ -13,7 +13,7 @@ class Produit extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'nom', 'image', 'mode', 'type', 'mesure', 'description', 'etagere', 'categorie',
+        'code', 'nom', 'image', 'mode', 'type', 'mesure', 'description', 'etagere', 'categorie', 'prix_vente', 'pour_plat',
     ];
 
     const RULES = [
@@ -43,6 +43,16 @@ class Produit extends Model
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
     }
 
+    public function scopeCuisinable($query)
+    {
+        return $query->where('pour_plat', true);
+    }
+
+    public function scopeBuvable($query)
+    {
+        return $query->where('pour_plat', false);
+    }
+
     public function achats()
     {
         return $this->hasMany(Achat::class, 'ingredient');
@@ -51,6 +61,11 @@ class Produit extends Model
     public function categorieLinked()
     {
         return $this->belongsTo(Categorie::class, 'categorie');
+    }
+
+    public function prixList()
+    {
+        return $this->hasMany(Prix::class, 'produit');
     }
 
     public function plats()

@@ -13,7 +13,7 @@ class Attribution extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'reservation', 'status',
+        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'reservation', 'status', 'remise',
     ];
 
     const RULES = [

@@ -12,10 +12,9 @@ class Sortie extends Model
      *
      * @return void
      */
-    public function __construct(array $attributes = array(), string $titre = '')
+    public function __construct(array $attributes = array())
     {
         parent::__construct($attributes);
-        $this->titrer($titre);
         $this->genererCode();
     }
 
@@ -25,10 +24,11 @@ class Sortie extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'demande', 'titre',
+        'code', 'demande', 'titre', 'departement',
     ];
     const RULES = [
         'titre' => 'required|max:150|unique:sorties,titre',
+        'departement' => 'required',
     ];
 
     public static function regles(int $id)

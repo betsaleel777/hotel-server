@@ -20,28 +20,29 @@ class SortiesController extends Controller
 
     private static function returning(int $id, string $message)
     {
-        $sortie = Sortie::with('demandelinked', 'produits')->find($id);
+        $sortie = Sortie::with('demandelinked', 'departementLinked', 'produits')->find($id);
         return [
             'message' => $message,
-            'demande' => [
+            'sortie' => [
                 'id' => $sortie->id,
                 'titre' => $sortie->titre,
                 'status' => $sortie->status,
                 'code' => $sortie->code,
                 'produits' => $sortie->produits,
                 'created_at' => $sortie->created_at,
-                'demande' => $sortie->demandeLinked->id,
+                'departement' => $sortie->departementLinked->nom,
+                'demande' => empty($sortie->demandeLinked) ? null : $sortie->demandeLinked->id,
             ],
         ];
     }
 
     public function getAll()
     {
-        $sorties = Sortie::with('produits', 'demandeLinked.departementLinked')->get();
+        $sorties = Sortie::with('produits', 'departementLinked', 'demandeLinked')->get();
         return response()->json(['sorties' => $sorties]);
     }
 
-    public function insert(Request $request)
+    public function insertFromDemande(Request $request)
     {
         $this->validate($request, Sortie::RULES);
         $demande = Demande::find($request->demande);
@@ -49,6 +50,19 @@ class SortiesController extends Controller
         $sortie->save();
         foreach ($request->articles as $article) {
             $sortie->produits()->attach($article['id'], ['quantite' => (int) $article['valeur'], 'demandees' => (int) $article['quantite']]);
+        }
+        $message = "La sortie, $sortie->code a été crée avec succes.";
+        return response()->json(self::returning($sortie->id, $message));
+    }
+
+    public function insert(Request $request)
+    {
+        $this->validate($request, Sortie::RULES);
+        $sortie = new Sortie($request->all());
+        $sortie->titre = $request->titre;
+        $sortie->save();
+        foreach ($request->articles as $article) {
+            $sortie->produits()->attach($article['produit'], ['quantite' => (int) $article['quantite'], 'demandees' => 0]);
         }
         $message = "La sortie, $sortie->code a été crée avec succes.";
         return response()->json(self::returning($sortie->id, $message));

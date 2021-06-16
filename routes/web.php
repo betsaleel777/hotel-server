@@ -27,7 +27,6 @@ $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
         $router->get('/passage', 'GestionChambre\ChambresController@getPassage');
         $router->get('/reservation/{debut}-{fin}', 'GestionChambre\ChambresController@getReservation');
     });
-
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->get('/', 'GestionChambre\CategoriesController@getAll');
         $router->post('new', 'GestionChambre\CategoriesController@insert');
@@ -67,7 +66,13 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
         $router->delete('{id}', 'Reception\ReservationsController@delete');
         //other
         $router->put('abort/{id}', 'Reception\ReservationsController@annuler');
+    });
 
+    $router->group(['prefix' => 'encaissements'], function () use ($router) {
+        $router->get('/', 'Reception\EncaissementsController@getAll');
+        $router->post('new', 'Reception\EncaissementsController@insert');
+        $router->put('{id}', 'Reception\EncaissementsController@update');
+        $router->delete('{id}', 'Reception\EncaissementsController@delete');
     });
 });
 
@@ -75,6 +80,10 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
 
     $router->group(['prefix' => 'produits'], function () use ($router) {
         $router->get('/', 'Stock\ProduitsController@getAll');
+        $router->get('/inventaire', 'Stock\ProduitsController@inventaire');
+        $router->get('/inventaire/sortie', 'Stock\ProduitsController@inventaireSortie');
+        $router->get('/plats', 'Stock\ProduitsController@getPlatProducts');
+        $router->get('/boissons', 'Stock\ProduitsController@getBoissonProducts');
         $router->post('new', 'Stock\ProduitsController@insert');
         $router->put('{id}', 'Stock\ProduitsController@update');
         $router->delete('{id}', 'Stock\ProduitsController@delete');
@@ -100,8 +109,10 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
     $router->group(['prefix' => 'demandes'], function () use ($router) {
         $router->get('/', 'Stock\DemandesController@getAll');
         $router->get('/{departement}', 'Stock\DemandesController@getByDepartement');
+        $router->get('produits/{departement}', 'Stock\DemandesController@getProductsByDepartement');
         $router->get('reject/{id}', 'Stock\DemandesController@reject');
         $router->get('inventaire/{departement}', 'Stock\DemandesController@inventaire');
+        $router->get('inventaire/buvable/{departement}', 'Stock\DemandesController@inventaireBuvable');
         $router->get('traitement/{id}', 'Stock\DemandesController@traitement');
         $router->post('new', 'Stock\DemandesController@insert');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');
@@ -109,8 +120,9 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
 
     $router->group(['prefix' => 'sorties'], function () use ($router) {
         $router->get('/', 'Stock\SortiesController@getAll');
-        $router->put('{id}', 'Stock\DemandesController@update');
-        $router->post('new', 'Stock\DemandesController@insert');
+        $router->put('{id}', 'Stock\SortiesController@update');
+        $router->post('demande', 'Stock\DemandesController@insertFromDemande');
+        $router->post('new', 'Stock\SortiesController@insert');
     });
 
 });
@@ -158,8 +170,17 @@ $router->group(['prefix' => 'bar'], function () use ($router) {
 
 });
 
-$router->group(['prefix' => 'parametre'], function () use ($router) {
+$router->group(['prefix' => 'caisses'], function () use ($router) {
+    $router->group(['prefix' => 'encaissements'], function () use ($router) {
+        $router->get('/', 'Caisse\EncaissementsController@getAll');
+        $router->get('/{id}', 'Caisse\EncaissementsController@getOne');
+        $router->post('new', 'Caisse\EncaissementsController@insert');
+        $router->put('{id}', 'Caisse\EncaissementsController@update');
+        $router->delete('{id}', 'Caisse\EncaissementsController@delete');
+    });
+});
 
+$router->group(['prefix' => 'parametre'], function () use ($router) {
     $router->group(['prefix' => 'departements'], function () use ($router) {
         $router->get('/', 'Parametre\DepartementsController@getAll');
         $router->get('/{name}', 'Parametre\DepartementsController@getByName');

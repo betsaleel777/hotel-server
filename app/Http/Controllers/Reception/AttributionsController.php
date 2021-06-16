@@ -21,7 +21,9 @@ class AttributionsController extends Controller
 
     public function getAll()
     {
-        $attributions = Attribution::with('clientLinked', 'chambreLinked')->get();
+        $attributions = Attribution::with(['clientLinked', 'chambreLinked.prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->get();
         return response()->json(['attributions' => $attributions]);
     }
 

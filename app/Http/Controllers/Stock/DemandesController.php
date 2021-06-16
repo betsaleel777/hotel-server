@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
+use App\Models\Parametre\Departement;
 use App\Models\Stock\Demande;
 use App\Models\Stock\Sortie;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class DemandesController extends Controller
                 'code' => $demande->code,
                 'produits' => $demande->produits,
                 'created_at' => $demande->created_at,
-                'departement' => $demande->departementLinked->id,
+                'departement' => ['id' => $demande->departementLinked->id, 'nom' => $demande->departementLinked->nom],
             ],
         ];
     }
@@ -100,8 +101,10 @@ class DemandesController extends Controller
         $demande = Demande::find($id);
         $demande->livrer();
         $demande->save();
-        $sortie = new Sortie(titre:$demande->titre);
+        $sortie = new Sortie();
+        $sortie->titrer($demande->titre);
         $sortie->demande = $demande->id;
+        $sortie->departement = $demande->departement;
         $sortie->save();
         foreach ($request->articles as $article) {
             $sortie->produits()->attach($article['produit'], ['quantite' => $article['valeur'], 'demandees' => $article['quantite']]);
@@ -124,14 +127,16 @@ class DemandesController extends Controller
         $demande = Demande::find($id);
         //encaissement à prendre en compte ici
         $articlesWithoutDelivery = DB::select(DB::Raw(
-            "SELECT pd.produit,pd.quantite,p.nom,p.code,p.mesure,SUM(a.quantite) AS disponible FROM produits_demandes pd
-             INNER JOIN produits p ON p.id=pd.produit INNER JOIN approvisionements a ON a.ingredient = pd.produit
-             WHERE pd.demande = $id GROUP BY a.ingredient,pd.produit,pd.quantite,p.nom,p.code,p.mesure"
+            "WITH sortie AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+             INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
+             GROUP BY pe.produit,p.nom,p.code,p.mesure)
+             SELECT pd.produit,pd.quantite,p.nom,p.code,p.mesure,SUM(a.quantite - IFNULL(sortie.quantite/2,0)) AS disponible
+             FROM produits_demandes pd INNER JOIN produits p ON p.id=pd.produit INNER JOIN approvisionements a ON a.ingredient = pd.produit
+             LEFT JOIN sortie ON sortie.produit = p.id WHERE pd.demande = $id GROUP BY a.ingredient,pd.produit,pd.quantite,p.nom,p.code,p.mesure"
         ));
         $articlesDelivered = DB::select(DB::Raw(
-            "SELECT pd.produit,p.nom,p.code,p.mesure,SUM(pd.quantite) AS quantite FROM motel.produits_demandes pd
-             INNER JOIN produits p ON p.id=pd.produit INNER JOIN demandes d ON pd.demande = d.id
-             WHERE d.status = 'livrée' GROUP BY pd.produit,p.nom,p.code,p.mesure"
+            "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.quantite) AS quantite FROM produits_sorties ps
+             INNER JOIN produits p ON p.id=ps.produit GROUP BY ps.produit,p.nom,p.code,p.mesure"
         ));
         $articles = [];
         $produitsDelivered = array_column($articlesDelivered, 'produit');
@@ -139,7 +144,7 @@ class DemandesController extends Controller
             if (in_array($withoutDelivery->produit, $produitsDelivered)) {
                 foreach ($articlesDelivered as $delivered) {
                     if ($delivered->produit === $withoutDelivery->produit) {
-                        $articles[] = [
+                        $articles[] = (object) [
                             'produit' => $delivered->produit,
                             'quantite' => $withoutDelivery->quantite,
                             'nom' => $delivered->nom,
@@ -154,15 +159,105 @@ class DemandesController extends Controller
                 $articles[] = $withoutDelivery;
             }
         }
-        return response()->json(['articles' => $articles]);
+        $platsVendus = DB::select(DB::Raw(
+            "WITH sortie AS (SELECT pl.id,pl.nom,sum(pe.quantite) AS nombre FROM plats pl
+             INNER JOIN plats_encaissements pe on pe.plat=pl.id GROUP BY pe.plat,pl.id,pl.nom)
+             SELECT i.produit,p.code,p.nom,p.mesure,AVG(i.quantite*s.nombre) AS quantite FROM ingredients i
+             INNER JOIN produits p on p.id=i.produit INNER JOIN sortie s ON s.id=i.plat WHERE i.plat IN
+             (SELECT pl.id FROM plats pl INNER JOIN plats_encaissements pe ON pe.plat=pl.id GROUP BY pe.plat,pl.id)
+             GROUP BY p.id,p.nom,p.mesure,i.produit,p.code"
+        ));
+        $inventaire = [];
+        $ids = array_column($platsVendus, 'produit');
+        foreach ($articles as $sansPlats) {
+            if (in_array($sansPlats->produit, $ids)) {
+                foreach ($platsVendus as $vendus) {
+                    if ($vendus->produit === $sansPlats->produit) {
+                        $inventaire[] = [
+                            'produit' => $vendus->produit,
+                            'nom' => $vendus->nom,
+                            'code' => $vendus->code,
+                            'mesure' => $vendus->mesure,
+                            'disponible' => $sansPlats->disponible - $vendus->quantite,
+                        ];
+                        break;
+                    }
+                }
+            } else {
+                $inventaire[] = $sansPlats;
+            }
+        }
+        return response()->json(['articles' => $inventaire]);
+    }
+
+    public function getProductsByDepartement(int $departement)
+    {
+        $produits = DB::select(DB::raw(
+            "SELECT p.id,p.nom, p.code, p.mesure FROM produits_sorties ps
+             INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
+             WHERE s.departement=$departement GROUP BY ps.produit,p.id,p.nom,p.code,p.mesure"
+        ));
+        return response()->json(['produits' => $produits]);
     }
 
     public function inventaire(int $departement)
     {
+        $departementConcerne = Departement::find($departement);
+        $inventaireSansPlatVendus = DB::select(DB::Raw(
+            "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+                 INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
+                 WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
+                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+                 FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
+                 LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement
+                 GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
+        ));
+
+        if ($departementConcerne->nom === 'bar') {
+            return response()->json(['inventaire' => $inventaireSansPlatVendus]);
+        } else {
+            $platsVendus = DB::select(DB::Raw(
+                "WITH encaisse AS (SELECT pl.id,pl.nom,sum(pe.quantite) AS nombre FROM plats pl
+             INNER JOIN plats_encaissements pe on pe.plat=pl.id GROUP BY pe.plat,pl.id,pl.nom)
+             SELECT i.produit,p.code,p.nom,p.mesure,AVG(i.quantite*e.nombre) AS quantite FROM ingredients i
+             INNER JOIN produits p on p.id=i.produit INNER JOIN encaisse e ON e.id=i.plat WHERE i.plat IN
+             (SELECT pl.id FROM plats pl INNER JOIN plats_encaissements pe ON pe.plat=pl.id GROUP BY pe.plat,pl.id)
+             GROUP BY p.id,p.nom,p.mesure,i.produit,p.code"
+            ));
+            $inventaire = [];
+            $ids = array_column($platsVendus, 'produit');
+            foreach ($inventaireSansPlatVendus as $sansPlats) {
+                if (in_array($sansPlats->produit, $ids)) {
+                    foreach ($platsVendus as $vendus) {
+                        if ($vendus->produit === $sansPlats->produit) {
+                            $inventaire[] = [
+                                'produit' => $vendus->produit,
+                                'nom' => $vendus->nom,
+                                'code' => $vendus->code,
+                                'mesure' => $vendus->mesure,
+                                'disponible' => $sansPlats->disponible - $vendus->quantite,
+                            ];
+                            break;
+                        }
+                    }
+                } else {
+                    $inventaire[] = $sansPlats;
+                }
+            }
+            return response()->json(['inventaire' => $inventaire]);
+        }
+    }
+
+    public function inventaireBuvable(int $departement)
+    {
         $inventaire = DB::select(DB::Raw(
-            "SELECT p.id,p.nom, p.code, p.mesure, SUM(pd.quantite) AS quantite,d.departement FROM produits_demandes pd
-             INNER JOIN demandes d ON d.id=pd.demande INNER JOIN produits p ON p.id=pd.produit
-             WHERE d.departement=$departement AND d.status = 'livrée' GROUP BY p.id,p.nom,p.code,p.mesure,d.departement"
+            "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+             INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
+             WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
+             SELECT p.id,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS quantite, s.departement,p.prix_vente
+             FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
+             LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement AND p.pour_plat=0
+             GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
         ));
         return response()->json(['inventaire' => $inventaire]);
     }
