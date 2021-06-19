@@ -175,6 +175,7 @@ $router->group(['prefix' => 'caisses'], function () use ($router) {
     $router->group(['prefix' => 'encaissements'], function () use ($router) {
         $router->get('/', 'Caisse\EncaissementsController@getAll');
         $router->get('/{id}', 'Caisse\EncaissementsController@getOne');
+        $router->get('/departement/{id}', 'Caisse\EncaissementsController@getByDepartement');
         $router->post('new', 'Caisse\EncaissementsController@insert');
         $router->put('{id}', 'Caisse\EncaissementsController@update');
         $router->delete('{id}', 'Caisse\EncaissementsController@delete');

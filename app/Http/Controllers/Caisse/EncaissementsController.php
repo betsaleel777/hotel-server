@@ -19,7 +19,15 @@ class EncaissementsController extends Controller
 
     public function getAll()
     {
-        $encaissements = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked', 'produits', 'plats')->get();
+        $encaissements = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked',
+            'produits', 'plats', 'cocktails', 'tournees')->get();
+        return response()->json(['encaissements' => $encaissements]);
+    }
+
+    public function getByDepartement(int $id)
+    {
+        $encaissements = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked',
+            'produits', 'plats', 'cocktails', 'tournees')->where('departement', $id)->get();
         return response()->json(['encaissements' => $encaissements]);
     }
 
@@ -34,8 +42,14 @@ class EncaissementsController extends Controller
         foreach ($request->plats as $article) {
             $encaissement->plats()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
         }
+        foreach ($request->tournees as $article) {
+            $encaissement->tournees()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+        }
+        foreach ($request->cocktails as $article) {
+            $encaissement->cocktails()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+        }
         $message = "La caisse a enregistrée avec succès la consommation, code: $encaissement->nom";
-        $encaissement = Encaissement::with('plats', 'produits')->find($encaissement->id);
+        $encaissement = Encaissement::with('plats', 'produits', 'cocktails', 'tournees')->find($encaissement->id);
         return response()->json([
             'message' => $message,
             'encaissement' => [
@@ -46,13 +60,15 @@ class EncaissementsController extends Controller
                 'code' => $encaissement->code,
                 'produits' => $encaissement->produits,
                 'plats' => $encaissement->plats,
+                'cocktails' => $encaissement->cocktails,
+                'tournees' => $encaissement->tournees,
             ],
         ]);
     }
 
     public function getOne(int $id)
     {
-        $encaissement = Encaissement::with('attributionLinked', 'produits', 'plats')->find($id);
+        $encaissement = Encaissement::with('attributionLinked', 'produits', 'plats', 'cocktails', 'tournees')->find($id);
         return response()->json(['encaissement' => $encaissement]);
     }
 
@@ -69,8 +85,18 @@ class EncaissementsController extends Controller
             $toSync[$article['id']] = ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']];
         }
         $encaissement->produits()->sync($toSync);
+        $toSync = [];
+        foreach ($request->cocktails as $article) {
+            $toSync[$article['id']] = ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']];
+        }
+        $encaissement->cocktails()->sync($toSync);
+        $toSync = [];
+        foreach ($request->tournees as $article) {
+            $toSync[$article['id']] = ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']];
+        }
+        $encaissement->tournees()->sync($toSync);
         $message = "L'encaissement $encaissement->code a été completé avec succès.";
-        $encaissement = Encaissement::with('plats', 'produits')->find($encaissement->id);
+        $encaissement = Encaissement::with('plats', 'produits', 'cocktails', 'tournees')->find($encaissement->id);
         return response()->json([
             'message' => $message,
             'encaissement' => [
@@ -81,6 +107,8 @@ class EncaissementsController extends Controller
                 'code' => $encaissement->code,
                 'produits' => $encaissement->produits,
                 'plats' => $encaissement->plats,
+                'cocktails' => $encaissement->cocktails,
+                'tournees' => $encaissement->tournees,
             ],
         ]);
 

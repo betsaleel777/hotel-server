@@ -15,6 +15,12 @@ class CreateTourneesEncaissementsTable extends Migration
     {
         Schema::create('tournees_encaissements', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('encaissement');
+            $table->unsignedBigInteger('tournee');
+            $table->unsignedDouble('quantite');
+            $table->unsignedMediumInteger('prix_vente');
+            $table->foreign('encaissement')->references('id')->on('encaissements')->onDelete('cascade');
+            $table->foreign('tournee')->references('id')->on('tournees')->onDelete('cascade');
             $table->timestamps();
         });
     }

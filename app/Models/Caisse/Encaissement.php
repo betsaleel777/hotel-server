@@ -2,6 +2,8 @@
 
 namespace App\Models\Caisse;
 
+use App\Models\Bar\Cocktail;
+use App\Models\Bar\Tournee;
 use App\Models\Reception\Attribution;
 use App\Models\Restaurant\Plat;
 use App\Models\Stock\Produit;
@@ -58,8 +60,19 @@ class Encaissement extends Model
     {
         return $this->belongsToMany(Produit::class, 'produits_encaissements', 'encaissement', 'produit')->withPivot('quantite', 'prix_vente')->withTimestamps();
     }
+
     public function plats()
     {
         return $this->belongsToMany(Plat::class, 'plats_encaissements', 'encaissement', 'plat')->withPivot('quantite', 'prix_vente')->withTimestamps();
+    }
+
+    public function cocktails()
+    {
+        return $this->belongsToMany(Cocktail::class, 'cocktails_encaissements', 'encaissement', 'cocktail')->withPivot('quantite', 'prix_vente')->withTimestamps();
+    }
+
+    public function tournees()
+    {
+        return $this->belongsToMany(Tournee::class, 'tournees_encaissements', 'encaissement', 'tournee')->withPivot('quantite', 'prix_vente')->withTimestamps();
     }
 }

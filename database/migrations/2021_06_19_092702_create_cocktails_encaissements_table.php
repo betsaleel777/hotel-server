@@ -15,6 +15,13 @@ class CreateCocktailsEncaissementsTable extends Migration
     {
         Schema::create('cocktails_encaissements', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('encaissement');
+            $table->unsignedBigInteger('cocktail');
+            $table->unsignedDouble('quantite');
+            $table->unsignedMediumInteger('prix_vente');
+            $table->foreign('encaissement')->references('id')->on('encaissements')->onDelete('cascade');
+            $table->foreign('cocktail')->references('id')->on('cocktails')->onDelete('cascade');
+
             $table->timestamps();
         });
     }
