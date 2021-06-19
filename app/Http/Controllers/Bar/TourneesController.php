@@ -51,6 +51,7 @@ class TourneesController extends Controller
                 'code' => $tournee->code,
                 'titre' => $tournee->titre,
                 'nombre' => $tournee->nombre,
+                'contenance' => $tournee->contenance,
                 'produit' => $tournee->produit,
                 'montant' => $tournee->prixList[0]->montant,
             ],
@@ -70,6 +71,7 @@ class TourneesController extends Controller
         $tournee = Tournee::find($id);
         $tournee->titre = $request->titre;
         $tournee->nombre = $request->nombre;
+        $tournee->contenance = $request->contenance;
         $tournee->save();
 
         $prix = new Prix(['montant' => $request->montant, 'tournee' => $tournee->id]);
@@ -90,6 +92,7 @@ class TourneesController extends Controller
                 'code' => $tournee->code,
                 'titre' => $tournee->titre,
                 'nombre' => $tournee->nombre,
+                'contenance' => $tournee->contenance,
                 'produit' => $tournee->produit,
                 'montant' => $tournee->prixList[0]->montant,
             ],

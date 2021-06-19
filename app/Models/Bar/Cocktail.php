@@ -2,10 +2,9 @@
 
 namespace App\Models\Bar;
 
-use App\Models\Stock\Produit;
 use Illuminate\Database\Eloquent\Model;
 
-class Tournee extends Model
+class Cocktail extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -13,22 +12,17 @@ class Tournee extends Model
      * @var array
      */
     protected $fillable = [
-        'titre', 'produit', 'nombre', 'contenance', 'code',
+        'nom', 'description', 'code', 'prix_vente',
     ];
 
     const RULES = [
-        'titre' => 'nullable|unique:tournees,titre',
-        'produit' => 'required',
-        'nombre' => 'required',
-        'contenance' => 'required',
+        'nom' => 'nullable|unique:cocktails,nom',
     ];
 
     public static function regles(int $id)
     {
         return [
-            'titre' => 'required|unique:tournees,titre,' . $id,
-            'produit' => 'required',
-            'nombre' => 'required',
+            'nom' => 'nullable|unique:cocktails,nom,' . $id,
         ];
     }
 
@@ -39,13 +33,13 @@ class Tournee extends Model
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
     }
 
-    public function produitLinked()
+    public function tournees()
     {
-        return $this->belongsTo(Produit::class, 'produit');
+        return $this->belongsToMany(Tournee::class, 'cocktails_tournees', 'cocktail', 'tournee')->withPivot('quantite')->withTimestamps();
     }
 
     public function prixList()
     {
-        return $this->hasMany(Prix::class, 'tournee');
+        return $this->hasMany(PrixCocktail::class, 'cocktail');
     }
 }

@@ -96,7 +96,6 @@ class PlatsController extends Controller
         foreach ($request->ingredients as $ingredient) {
             $toSync[$ingredient['id']] = ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']];
         }
-        //return response()->json($toSync, 400);
         $plat->produits()->sync($toSync);
         $message = "Le plat $plat->code a  été modifié avec succès.";
         $plat = Plat::with(['prix' => function ($query) {

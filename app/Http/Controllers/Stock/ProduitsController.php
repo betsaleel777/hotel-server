@@ -41,6 +41,12 @@ class ProduitsController extends Controller
         return response()->json(['produits' => $produits]);
     }
 
+    public function getTourneesProducts()
+    {
+        $produits = Produit::with('categorieLinked')->tournable()->get();
+        return response()->json(['produits' => $produits]);
+    }
+
     public function insert(Request $request)
     {
         $request->type === self::PRODUIT_STANDARD ? $rules = array_merge(Produit::RULES, Categorie::RULES, Prix::RULES) : $rules = array_merge(Produit::RULES, Categorie::RULES);
@@ -68,6 +74,7 @@ class ProduitsController extends Controller
                 'type' => $produit->type,
                 'montant' => $produit->prix_vente,
                 'pour_plat' => $produit->pour_plat,
+                'pour_tournee' => $produit->pour_tournee,
                 'description' => $produit->description,
                 'etagere' => $produit->etagere,
                 'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],
@@ -90,6 +97,7 @@ class ProduitsController extends Controller
         $produit->mesure = $request->mesure;
         $produit->prix_vente = $request->montant;
         $produit->pour_plat = $request->pour_plat;
+        $produit->pour_tournee = $request->pour_tournee;
         $produit->mode = $request->mode;
         $produit->type = $request->type;
         $produit->etagere = $request->etagere;
@@ -115,6 +123,7 @@ class ProduitsController extends Controller
                 'type' => $produit->type,
                 'montant' => $produit->prix_vente,
                 'pour_plat' => $produit->pour_plat,
+                'pour_tournee' => $produit->pour_tournee,
                 'description' => $produit->description,
                 'etagere' => $produit->etagere,
                 'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],

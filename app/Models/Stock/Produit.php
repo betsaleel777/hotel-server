@@ -13,7 +13,7 @@ class Produit extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'nom', 'image', 'mode', 'type', 'mesure', 'description', 'etagere', 'categorie', 'prix_vente', 'pour_plat',
+        'code', 'nom', 'image', 'mode', 'type', 'mesure', 'description', 'etagere', 'categorie', 'prix_vente', 'pour_plat', 'pour_tournee',
     ];
 
     const RULES = [
@@ -51,6 +51,10 @@ class Produit extends Model
     public function scopeBuvable($query)
     {
         return $query->where('pour_plat', false);
+    }
+    public function scopeTournable($query)
+    {
+        return $query->where('pour_tournee', true);
     }
 
     public function achats()

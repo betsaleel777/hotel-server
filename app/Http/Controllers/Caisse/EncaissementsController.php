@@ -19,7 +19,7 @@ class EncaissementsController extends Controller
 
     public function getAll()
     {
-        $encaissements = Encaissement::with('attributionLinked', 'produits', 'plats')->get();
+        $encaissements = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked', 'produits', 'plats')->get();
         return response()->json(['encaissements' => $encaissements]);
     }
 
@@ -56,8 +56,33 @@ class EncaissementsController extends Controller
         return response()->json(['encaissement' => $encaissement]);
     }
 
-    public function update(Request $request)
+    public function update(int $id, Request $request)
     {
+        $encaissement = Encaissement::find($id);
+        $toSync = [];
+        foreach ($request->plats as $article) {
+            $toSync[$article['id']] = ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']];
+        }
+        $encaissement->plats()->sync($toSync);
+        $toSync = [];
+        foreach ($request->boissons as $article) {
+            $toSync[$article['id']] = ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']];
+        }
+        $encaissement->produits()->sync($toSync);
+        $message = "L'encaissement $encaissement->code a été completé avec succès.";
+        $encaissement = Encaissement::with('plats', 'produits')->find($encaissement->id);
+        return response()->json([
+            'message' => $message,
+            'encaissement' => [
+                'id' => $encaissement->id,
+                'nom' => $encaissement->nom,
+                'status' => $encaissement->status,
+                'created_at' => $encaissement->created_at,
+                'code' => $encaissement->code,
+                'produits' => $encaissement->produits,
+                'plats' => $encaissement->plats,
+            ],
+        ]);
 
     }
 
