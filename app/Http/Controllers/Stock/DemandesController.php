@@ -125,7 +125,6 @@ class DemandesController extends Controller
     public function traitement(int $id)
     {
         $demande = Demande::find($id);
-        //encaissement à prendre en compte ici
         $articlesWithoutDelivery = DB::select(DB::Raw(
             "WITH sortie AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
              INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
@@ -134,6 +133,7 @@ class DemandesController extends Controller
              FROM produits_demandes pd INNER JOIN produits p ON p.id=pd.produit INNER JOIN approvisionements a ON a.ingredient = pd.produit
              LEFT JOIN sortie ON sortie.produit = p.id WHERE pd.demande = $id GROUP BY a.ingredient,pd.produit,pd.quantite,p.nom,p.code,p.mesure"
         ));
+        //tournee encaissée à prendre en compte ici
         $articlesDelivered = DB::select(DB::Raw(
             "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.quantite) AS quantite FROM produits_sorties ps
              INNER JOIN produits p ON p.id=ps.produit GROUP BY ps.produit,p.nom,p.code,p.mesure"
@@ -203,19 +203,65 @@ class DemandesController extends Controller
     public function inventaire(int $departement)
     {
         $departementConcerne = Departement::find($departement);
-        $inventaireSansPlatVendus = DB::select(DB::Raw(
-            "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+
+        if ($departementConcerne->nom === 'bar') {
+            $inventaireSansTourneeVendus = DB::select(DB::Raw(
+                "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+                 INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
+                 WHERE e.departement =$departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
+                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+                 ,IFNULL(t.contenance,0) as contenance FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie
+                 INNER JOIN produits p ON p.id=ps.produit LEFT JOIN tournees t ON t.produit =ps.produit
+                 LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance"
+            ));
+            $tourneesVendus = DB::select(DB::Raw(
+                "with encaisse as (select c.nom,c.id,sum(ce.quantite) as nombre from cocktails_encaissements ce inner join cocktails c on c.id = ce.cocktail
+                 group by ce.cocktail,c.nom,c.id)
+                 select p.id as produit,t1.titre as nom,sum(ct.quantite*e.nombre)*t1.nombre*25 as consommation
+                 from cocktails_tournees ct inner join encaisse e on e.id=ct.cocktail inner join tournees t1 on t1.id=ct.tournee
+                 inner join produits p on t1.produit = p.id group by ct.tournee,p.id,t1.titre,t1.nombre
+                 UNION
+                 select p.id as produit,t.titre as nom,sum(te.quantite)*t.nombre*25 as consommation from tournees_encaissements te
+                 inner join tournees t on t.id = te.tournee inner join produits p on t.produit = p.id group by te.tournee,p.id,t.titre,t.nombre"
+            ));
+
+            $inventaire = [];
+            $ids = array_column($tourneesVendus, 'produit');
+            foreach ($inventaireSansTourneeVendus as $sansTournee) {
+                if (in_array($sansTournee->produit, $ids)) {
+                    foreach ($tourneesVendus as $vendus) {
+                        if ($vendus->produit === $sansTournee->produit) {
+                            $disponibleFloat = $sansTournee->disponible - ($vendus->consommation / $sansTournee->contenance);
+                            $valeurEntiere = intval($disponibleFloat);
+                            $decimalPart = $disponibleFloat - $valeurEntiere;
+                            $resteBouteille = $decimalPart * 100;
+                            $inventaire[] = [
+                                'produit' => $vendus->produit,
+                                'nom' => $sansTournee->nom,
+                                'code' => $sansTournee->code,
+                                'mesure' => $sansTournee->mesure,
+                                'disponible' => $valeurEntiere,
+                                'reste' => round($resteBouteille),
+                            ];
+                            break;
+                        }
+                    }
+                } else {
+                    $inventaire[] = $sansTournee;
+                }
+            }
+            return response()->json(['inventaire' => $inventaire]);
+        } else {
+            $inventaireSansPlatVendus = DB::select(DB::Raw(
+                "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
                  INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
                  WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
                  SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
                  FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
                  LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement
                  GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
-        ));
+            ));
 
-        if ($departementConcerne->nom === 'bar') {
-            return response()->json(['inventaire' => $inventaireSansPlatVendus]);
-        } else {
             $platsVendus = DB::select(DB::Raw(
                 "WITH encaisse AS (SELECT pl.id,pl.nom,sum(pe.quantite) AS nombre FROM plats pl
              INNER JOIN plats_encaissements pe on pe.plat=pl.id GROUP BY pe.plat,pl.id,pl.nom)
@@ -256,9 +302,62 @@ class DemandesController extends Controller
              WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
              SELECT p.id,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS quantite, s.departement,p.prix_vente
              FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
-             LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement AND p.pour_plat=0
+             LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement AND p.pour_plat=0 AND p.pour_tournee=0
              GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
         ));
+        // $inventaireSansTourneeVendus = DB::select(DB::Raw(
+        //     "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+        //      INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
+        //      WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
+        //      SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(t.contenance,0) as contenance,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+        //      FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
+        //      LEFT JOIN tournees t ON t.produit =ps.produit LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement = $departement AND p.pour_plat=0
+        //      GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance"
+        // ));
+        // $tourneesVendus = DB::select(DB::Raw(
+        //     "WITH encaisse AS (SELECT c.nom,c.id,sum(ce.quantite) AS nombre FROM cocktails_encaissements ce inner join cocktails c on c.id = ce.cocktail
+        //      group by ce.cocktail,c.nom,c.id)
+        //      select p.id as produit,t1.titre as nom,sum(ct.quantite*e.nombre)*t1.nombre*25 as consommation
+        //      from cocktails_tournees ct inner join encaisse e on e.id=ct.cocktail inner join tournees t1 on t1.id=ct.tournee
+        //      inner join produits p on t1.produit = p.id group by ct.tournee,p.id,t1.titre,t1.nombre
+        //      UNION
+        //      select p.id as produit,t.titre as nom,sum(te.quantite)*t.nombre*25 as consommation from tournees_encaissements te
+        //      inner join tournees t on t.id = te.tournee inner join produits p on t.produit = p.id group by te.tournee,p.id,t.titre,t.nombre"
+        // ));
+        // $inventaire = [];
+        // $ids = array_column($tourneesVendus, 'produit');
+        // foreach ($inventaireSansTourneeVendus as $sansTournee) {
+        //     if (in_array($sansTournee->produit, $ids)) {
+        //         foreach ($tourneesVendus as $vendus) {
+        //             if ($vendus->produit === $sansTournee->produit) {
+        //                 $disponibleFloat = $sansTournee->disponible - ($vendus->consommation / $sansTournee->contenance);
+        //                 $valeurEntiere = intval($disponibleFloat);
+        //                 $decimalPart = $disponibleFloat - $valeurEntiere;
+        //                 $resteBouteille = $decimalPart * 100;
+        //                 $inventaire[] = [
+        //                     'produit' => $vendus->produit,
+        //                     'nom' => $sansTournee->nom,
+        //                     'code' => $sansTournee->code,
+        //                     'mesure' => $sansTournee->mesure,
+        //                     'disponible' => $valeurEntiere,
+        //                     'reste' => round($resteBouteille),
+        //                 ];
+        //                 break;
+        //             }
+        //         }
+        //     } else {
+        //         $inventaire[] = $sansTournee;
+        //     }
+        // }
         return response()->json(['inventaire' => $inventaire]);
     }
+
 }
+
+// WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
+// INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
+// WHERE e.departement =$departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
+// SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+// ,IFNULL(t.contenance,0) as contenance FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie
+// INNER JOIN produits p ON p.id=ps.produit LEFT JOIN tournees t ON t.produit =ps.produit
+// LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance

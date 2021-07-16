@@ -35,6 +35,7 @@ class TourneesController extends Controller
         $produit = Produit::find($request->produit);
         $tournee->genererCode();
         empty($tournee->titre) ? $tournee->titre = $produit->nom . ' tournée' : $tournee->titre = $request->titre;
+        $tournee->prix_vente = $request->montant;
         $tournee->save();
         // enregistrement dans la table des prix de chambre
         $prix = new Prix(['montant' => $request->montant, 'tournee' => $tournee->id]);
@@ -72,6 +73,7 @@ class TourneesController extends Controller
         $tournee->titre = $request->titre;
         $tournee->nombre = $request->nombre;
         $tournee->contenance = $request->contenance;
+        $tournee->prix_vente = $request->montant;
         $tournee->save();
 
         $prix = new Prix(['montant' => $request->montant, 'tournee' => $tournee->id]);

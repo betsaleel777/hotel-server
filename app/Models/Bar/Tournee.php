@@ -13,7 +13,7 @@ class Tournee extends Model
      * @var array
      */
     protected $fillable = [
-        'titre', 'produit', 'nombre', 'contenance', 'code',
+        'titre', 'produit', 'nombre', 'contenance', 'code', 'prix_vente',
     ];
 
     const RULES = [

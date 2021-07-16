@@ -141,13 +141,13 @@ class ProduitsController extends Controller
 
     public function inventaire()
     {
-        $inventaireSanslesPlatVendus = DB::select(DB::Raw(
+        $inventaireSanslesPlatEtTourneesVendus = DB::select(DB::Raw(
             "WITH sortie AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
              INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
              GROUP BY pe.produit,p.nom,p.code,p.mesure)
-             SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(SUM(a.quantite-IFNULL(sortie.quantite/2,0)),0) AS disponible,p.prix_vente
-             FROM produits p LEFT JOIN approvisionements a ON a.ingredient=p.id LEFT JOIN sortie ON sortie.produit = p.id
-             GROUP BY a.ingredient,p.nom,p.code,p.mesure,p.prix_vente,p.id"
+             SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(t.contenance,0) as contenance,IFNULL(SUM(a.quantite-IFNULL(sortie.quantite/2,0)),0) AS disponible,p.prix_vente
+             FROM produits p LEFT JOIN approvisionements a ON a.ingredient=p.id LEFT JOIN tournees t ON t.produit=p.id LEFT JOIN sortie ON sortie.produit = p.id
+             GROUP BY a.ingredient,p.nom,p.code,p.mesure,p.prix_vente,p.id,t.contenance"
         ));
         $platsVendus = DB::select(DB::Raw(
             "with sortie as (select pl.id,pl.nom,sum(pe.quantite) as nombre from plats pl
@@ -156,13 +156,23 @@ class ProduitsController extends Controller
              inner join sortie s on s.id=i.plat where i.plat in (select pl.id from plats pl inner join plats_encaissements pe on pe.plat=pl.id group by pe.plat,pl.id)
              group by p.id,p.nom,p.mesure,i.produit,p.code"
         ));
-        $inventaire = [];
+        $tourneesVendus = DB::select(DB::Raw(
+            "with encaisse as (select c.nom,c.id,sum(ce.quantite) as nombre from cocktails_encaissements ce inner join cocktails c on c.id = ce.cocktail
+                 group by ce.cocktail,c.nom,c.id)
+                 select p.id as produit,t1.titre as nom,sum(ct.quantite*e.nombre)*t1.nombre*25 as consommation
+                 from cocktails_tournees ct inner join encaisse e on e.id=ct.cocktail inner join tournees t1 on t1.id=ct.tournee
+                 inner join produits p on t1.produit = p.id group by ct.tournee,p.id,t1.titre,t1.nombre
+                 UNION
+                 select p.id as produit,t.titre as nom,sum(te.quantite)*t.nombre*25 as consommation from tournees_encaissements te
+                 inner join tournees t on t.id = te.tournee inner join produits p on t.produit = p.id group by te.tournee,p.id,t.titre,t.nombre"
+        ));
+        $articles = [];
         $ids = array_column($platsVendus, 'produit');
-        foreach ($inventaireSanslesPlatVendus as $sansPlats) {
+        foreach ($inventaireSanslesPlatEtTourneesVendus as $sansPlats) {
             if (in_array($sansPlats->produit, $ids)) {
                 foreach ($platsVendus as $vendus) {
                     if ($vendus->produit === $sansPlats->produit) {
-                        $inventaire[] = [
+                        $articles[] = (object) [
                             'produit' => $vendus->produit,
                             'nom' => $vendus->nom,
                             'code' => $vendus->code,
@@ -173,7 +183,32 @@ class ProduitsController extends Controller
                     }
                 }
             } else {
-                $inventaire[] = $sansPlats;
+                $articles[] = $sansPlats;
+            }
+        }
+        $inventaire = [];
+        $ids = array_column($tourneesVendus, 'produit');
+        foreach ($articles as $sansTournee) {
+            if (in_array($sansTournee->produit, $ids)) {
+                foreach ($tourneesVendus as $vendus) {
+                    if ($vendus->produit === $sansTournee->produit) {
+                        $disponibleFloat = $sansTournee->disponible - ($vendus->consommation / $sansTournee->contenance);
+                        $valeurEntiere = intval($disponibleFloat);
+                        $decimalPart = $disponibleFloat - $valeurEntiere;
+                        $resteBouteille = $decimalPart * 100;
+                        $inventaire[] = [
+                            'produit' => $vendus->produit,
+                            'nom' => $sansTournee->nom,
+                            'code' => $sansTournee->code,
+                            'mesure' => $sansTournee->mesure,
+                            'disponible' => $valeurEntiere,
+                            'reste' => round($resteBouteille),
+                        ];
+                        break;
+                    }
+                }
+            } else {
+                $inventaire[] = $sansTournee;
             }
         }
         return response()->json(['inventaire' => $inventaire]);

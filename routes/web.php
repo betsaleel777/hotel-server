@@ -50,6 +50,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 
     $router->group(['prefix' => 'attributions'], function () use ($router) {
         $router->get('/', 'Reception\AttributionsController@getAll');
+        $router->get('/{id}', 'Reception\AttributionsController@getOne');
         $router->post('new', 'Reception\AttributionsController@insert');
         $router->delete('{id}', 'Reception\AttributionsController@delete');
         //other
@@ -136,7 +137,6 @@ $router->group(['prefix' => 'restaurant'], function () use ($router) {
         $router->post('new', 'Restaurant\PlatsController@insert');
         $router->put('{id}', 'Restaurant\PlatsController@update');
         $router->delete('{id}', 'Restaurant\PlatsController@delete');
-
         //other
         $router->post('/prix-minimal', 'Restaurant\PlatsController@prixMinimal');
     });
@@ -152,7 +152,6 @@ $router->group(['prefix' => 'restaurant'], function () use ($router) {
 });
 
 $router->group(['prefix' => 'bar'], function () use ($router) {
-
     $router->group(['prefix' => 'cocktails'], function () use ($router) {
         $router->get('/', 'Bar\CocktailsController@getAll');
         $router->get('/{id}', 'Bar\CocktailsController@getOne');
@@ -160,7 +159,6 @@ $router->group(['prefix' => 'bar'], function () use ($router) {
         $router->put('{id}', 'Bar\CocktailsController@update');
         $router->delete('{id}', 'Bar\CocktailsController@delete');
     });
-
     $router->group(['prefix' => 'tournees'], function () use ($router) {
         $router->get('/', 'Bar\TourneesController@getAll');
         $router->get('/{id}', 'Bar\TourneesController@getOne');
@@ -176,6 +174,9 @@ $router->group(['prefix' => 'caisses'], function () use ($router) {
         $router->get('/', 'Caisse\EncaissementsController@getAll');
         $router->get('/{id}', 'Caisse\EncaissementsController@getOne');
         $router->get('/departement/{id}', 'Caisse\EncaissementsController@getByDepartement');
+        $router->get('finance/{departement}', 'Caisse\EncaissementsController@pointFinancierStandard');
+        $router->get('finance/{departement}/{debut}/{fin}', 'Caisse\EncaissementsController@pointFinancierIntervalleDate');
+        $router->get('finance/{departement}/{jour}/', 'Caisse\EncaissementsController@pointFinancierJournalier');
         $router->post('new', 'Caisse\EncaissementsController@insert');
         $router->put('{id}', 'Caisse\EncaissementsController@update');
         $router->delete('{id}', 'Caisse\EncaissementsController@delete');

@@ -2,6 +2,7 @@
 
 namespace App\Models\Reception;
 
+use App\Models\Caisse\Encaissement as EncaissementCaisse;
 use App\Models\GestionChambre\Chambre;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,9 +14,9 @@ class Attribution extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'reservation', 'status', 'remise',
+        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'reservation', 'status', 'remise', 'prix',
     ];
-
+    protected $dates = ['entree', 'sortie'];
     const RULES = [
         'accompagnants' => 'nullable|numeric',
         'entree' => 'required',
@@ -66,6 +67,16 @@ class Attribution extends Model
     public function reservationLinked()
     {
         return $this->belongsTo(Reservation::class, 'reservation');
+    }
+
+    public function consommation()
+    {
+        return $this->hasOne(EncaissementCaisse::class, 'attribution');
+    }
+
+    public function encaissement()
+    {
+        return $this->hasOne(Encaissement::class, 'attribution');
     }
 
 }

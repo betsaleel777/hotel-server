@@ -3,7 +3,9 @@ namespace App\Http\Controllers\Caisse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Caisse\Encaissement;
+use App\Models\Parametre\Departement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EncaissementsController extends Controller
 {
@@ -34,7 +36,7 @@ class EncaissementsController extends Controller
     public function insert(Request $request)
     {
         $encaissement = new Encaissement($request->all());
-        $encaissement->impayer();
+        empty($request->attribution) ? $encaissement->payer() : $encaissement->impayer();
         $encaissement->save();
         foreach ($request->boissons as $article) {
             $encaissement->produits()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
@@ -68,7 +70,7 @@ class EncaissementsController extends Controller
 
     public function getOne(int $id)
     {
-        $encaissement = Encaissement::with('attributionLinked', 'produits', 'plats', 'cocktails', 'tournees')->find($id);
+        $encaissement = Encaissement::with('attributionLinked.clientLinked', 'produits', 'plats', 'cocktails', 'tournees')->find($id);
         return response()->json(['encaissement' => $encaissement]);
     }
 
@@ -116,6 +118,106 @@ class EncaissementsController extends Controller
 
     public function delete()
     {
+
+    }
+
+    public function pointFinancierStandard(int $departement)
+    {
+        $departementConcerne = Departement::find($departement);
+        if ($departementConcerne->nom === 'bar') {
+            $articlesVendus = DB::select(DB::Raw(
+                "select p.code,p.id,p.nom,p.mesure,'produit' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from produits_encaissements pe inner join produits p
+                 on p.id=pe.produit inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 group by p.id,p.code,p.nom,p.mesure
+                 UNION
+                 select c.code,c.id,c.nom,'' as mesure,'cocktail' as type,AVG(ce.prix_vente) as prix,sum(ce.quantite) as quantite from cocktails_encaissements ce inner join cocktails c
+                 on c.id=ce.cocktail inner join encaissements e on e.id=ce.encaissement where e.departement = $departement and e.status='payé'
+                 group by c.id,c.code,c.nom
+                 UNION
+                 select t.code,t.id,t.titre as nom,'' as mesure,'tournee' as type,AVG(te.prix_vente) as prix,sum(te.quantite) as quantite from tournees_encaissements te inner join tournees t
+                 on t.id=te.tournee inner join encaissements e on e.id=te.encaissement where e.departement = $departement and e.status='payé'
+                 group by t.id,t.code,t.titre"
+            ));
+            return response()->json(['point' => $articlesVendus]);
+        } else {
+            $platVendus = DB::select(DB::Raw(
+                "select p1.code,p1.id, p1.nom as nom,'' as mesure,'plat' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from plats_encaissements pe inner join plats p1
+                 on p1.id=pe.plat inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 group by p1.id,p1.code,p1.nom
+                 UNION
+                 select p.code,p.id,p.nom,p.mesure,'produit' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from produits_encaissements pe inner join produits p
+                 on p.id=pe.produit inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 group by p.id,p.code,p.nom,p.mesure"
+            ));
+            $point = [];
+            return response()->json(['point' => $platVendus]);
+        }
+
+    }
+
+    public function pointFinancierIntervalleDate(string $debut, string $fin, int $departement)
+    {
+        //date format created_at
+        $departementConcerne = Departement::find($departement);
+        if ($departementConcerne->nom === 'bar') {
+            $articlesVendus = DB::select(DB::Raw(
+                "select p.code,p.id,p.nom,p.mesure,'produit' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from produits_encaissements pe inner join produits p
+                 on p.id=pe.produit inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') between $debut and $fin group by p.id,p.code,p.nom,p.mesure
+                 UNION
+                 select c.code,c.id,c.nom,'' as mesure,'cocktail' as type,AVG(ce.prix_vente) as prix,sum(ce.quantite) as quantite from cocktails_encaissements ce inner join cocktails c
+                 on c.id=ce.cocktail inner join encaissements e on e.id=ce.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') between $debut and $fin group by c.id,c.code,c.nom
+                 UNION
+                 select t.code,t.id,t.titre as nom,'' as mesure,'tournee' as type,AVG(te.prix_vente) as prix,sum(te.quantite) as quantite from tournees_encaissements te inner join tournees t
+                 on t.id=te.tournee inner join encaissements e on e.id=te.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') between $debut and $fin group by t.id,t.code,t.titre"
+            ));
+            return response()->json(['point' => $articlesVendus]);
+        } else {
+            $platVendus = DB::select(DB::Raw(
+                "select p1.code,p1.id, p1.nom as nom,'' as mesure,'plat' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from plats_encaissements pe inner join plats p1
+                 on p1.id=pe.plat inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') between $debut and $fin group by p1.id,p1.code,p1.nom
+                 UNION
+                 select p.code,p.id,p.nom,p.mesure,'produit' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from produits_encaissements pe inner join produits p
+                 on p.id=pe.produit inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') between $debut and $fin group by p.id,p.code,p.nom,p.mesure"
+            ));
+            return response()->json(['point' => $platVendus]);
+        }
+    }
+
+    public function pointFinancierJournalier(string $jour, int $departement)
+    {
+        $departementConcerne = Departement::find($departement);
+        if ($departementConcerne->nom === 'bar') {
+            $articlesVendus = DB::select(DB::Raw(
+                "select p.code,p.id,p.nom,p.mesure,'produit' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from produits_encaissements pe inner join produits p
+                 on p.id=pe.produit inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') = $jour group by p.id,p.code,p.nom,p.mesure
+                 UNION
+                 select c.code,c.id,c.nom,'' as mesure,'cocktail' as type,AVG(ce.prix_vente) as prix,sum(ce.quantite) as quantite from cocktails_encaissements ce inner join cocktails c
+                 on c.id=ce.cocktail inner join encaissements e on e.id=ce.encaissement e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') = $jour group by c.id,c.code,c.nom
+                 UNION
+                 select t.code,t.id,t.titre as nom,'' as mesure,'tournee' as type,AVG(te.prix_vente) as prix,sum(te.quantite) as quantite from tournees_encaissements te inner join tournees t
+                 on t.id=te.tournee inner join encaissements e on e.id=te.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') = $jour group by t.id,t.code,t.titre"
+            ));
+            return response()->json(['point' => $articlesVendus]);
+        } else {
+            $platVendus = DB::select(DB::Raw(
+                "select p1.code,p1.id, p1.nom as nom,'' as mesure,'plat' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from plats_encaissements pe inner join plats p1
+                 on p1.id=pe.plat inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') = $jour group by p1.id,p1.code,p1.nom
+                 UNION
+                 select p.code,p.id,p.nom,p.mesure,'produit' as type,AVG(pe.prix_vente) as prix,sum(pe.quantite) as quantite from produits_encaissements pe inner join produits p
+                 on p.id=pe.produit inner join encaissements e on e.id=pe.encaissement where e.departement = $departement and e.status='payé'
+                 and DATE_FORMAT(e.created_at,'%d-%m-%Y') = $jour group by p.id,p.code,p.nom,p.mesure"
+            ));
+            return response()->json(['point' => $platVendus]);
+        }
 
     }
 }

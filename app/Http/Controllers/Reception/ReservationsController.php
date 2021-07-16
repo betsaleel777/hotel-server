@@ -45,10 +45,12 @@ class ReservationsController extends Controller
     {
         $this->validate($request, Reservation::RULES);
         $reservation = new Reservation($request->all());
+        empty($request->accompagnants) ? $reservation->accompagnants = 0 : null;
+        $chambre = Chambre::find($request->chambre);
+        $reservation->prix = $chambre->prix_vente;
         $reservation->genererCode();
         $reservation->reserver();
         $reservation->save();
-        $chambre = Chambre::find($request->chambre);
         $message = "La chambre $chambre->nom a été attribuée avec succès, code: $reservation->code";
         $reservation = Reservation::with('chambreLinked', 'clientLinked')->find($reservation->id);
         return response()->json([
@@ -67,7 +69,9 @@ class ReservationsController extends Controller
 
     public function getOne(int $id)
     {
-        $reservation = Reservation::find($id);
+        $reservation = Reservation::with(['chambreLinked', 'clientLinked.pieces' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }, 'encaissement.reservationLinked', 'encaissement.versements'])->find($id);
         return response()->json(['reservation' => $reservation]);
     }
 

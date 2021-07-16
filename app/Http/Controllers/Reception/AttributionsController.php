@@ -31,6 +31,8 @@ class AttributionsController extends Controller
     {
         $this->validate($request, Attribution::RULES);
         $attribution = new Attribution($request->all());
+        $chambre = Chambre::find($request->chambre);
+        $attribution->prix = $chambre->prix_vente;
         $attribution->occuper();
         $attribution->genererCode();
         $attribution->save();
@@ -39,7 +41,6 @@ class AttributionsController extends Controller
             $reservation->occuper();
             $reservation->save();
         }
-        $chambre = Chambre::find($request->chambre);
         $chambre->occuper();
         $chambre->save();
         $message = "La chambre $chambre->nom a été attribuée avec succès, code: $attribution->code";
@@ -59,7 +60,12 @@ class AttributionsController extends Controller
 
     public function getOne(int $id)
     {
-
+        $attribution = Attribution::with(['chambreLinked', 'clientLinked.pieces' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        },
+            'consommation.produits', 'consommation.plats', 'consommation.cocktails',
+            'consommation.tournees', 'encaissement.reservationLinked', 'encaissement.versements'])->find($id);
+        return response()->json(['attribution' => $attribution]);
     }
 
     public function update(Request $request)

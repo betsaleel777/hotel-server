@@ -13,8 +13,9 @@ class Reservation extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'status',
+        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'status', 'prix',
     ];
+    protected $dates = ['entree', 'sortie'];
 
     const RULES = [
         'accompagnants' => 'nullable|numeric',
@@ -78,6 +79,11 @@ class Reservation extends Model
     public function attribution()
     {
         return $this->hasOne(Attribution::class, 'reservation');
+    }
+
+    public function encaissement()
+    {
+        return $this->hasOne(Encaissement::class, 'reservation');
     }
 
 }

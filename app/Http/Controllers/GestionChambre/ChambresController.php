@@ -68,6 +68,7 @@ class ChambresController extends Controller
         $this->validate($request, $rules);
         //creation de la chambre
         $chambre = new Chambre($request->all());
+        $chambre->prix_vente = $request->montant;
         $chambre->liberer();
         $chambre->genererCode();
         $chambre->save();
@@ -106,6 +107,7 @@ class ChambresController extends Controller
 
         $chambre = Chambre::find($id);
         $chambre->nom = $request->nom;
+        $chambre->prix_vente = $request->montant;
         $chambre->categorie = $request->categorie;
         $dirtyChambre = $chambre->isDirty();
         $chambre->save();
@@ -117,20 +119,18 @@ class ChambresController extends Controller
             $prix->save();
         }
         $retour = [];
-        if ($dirtyChambre or $dirtyPrix) {
-            $chambre = Chambre::with(['prixList' => function ($query) {
-                return $query->orderBy('id', 'DESC');
-            }, 'categorieLinked'])->find($chambre->id);
-            $retour = [
-                'id' => $chambre->id,
-                'code' => $chambre->code,
-                'status' => $chambre->status,
-                'nom' => $chambre->nom,
-                'categorie' => $chambre->categorieLinked->id,
-                'standing' => $chambre->categorieLinked->nom,
-                'montant' => $chambre->prixList[0]->montant,
-            ];
-        }
+        $chambre = Chambre::with(['prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }, 'categorieLinked'])->find($chambre->id);
+        $retour = [
+            'id' => $chambre->id,
+            'code' => $chambre->code,
+            'status' => $chambre->status,
+            'nom' => $chambre->nom,
+            'categorie' => $chambre->categorieLinked->id,
+            'standing' => $chambre->categorieLinked->nom,
+            'montant' => $chambre->prixList[0]->montant,
+        ];
         $message = "La chambre $chambre->code a été modifiée avec succès.";
         return response()->json(['message' => $message, 'chambre' => $retour]);
     }
