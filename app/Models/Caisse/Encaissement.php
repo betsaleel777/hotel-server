@@ -28,7 +28,7 @@ class Encaissement extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'status', 'attribution', 'departement',
+        'code', 'status', 'attribution', 'departement', 'zone',
     ];
 
     const PAYER = 'payé';

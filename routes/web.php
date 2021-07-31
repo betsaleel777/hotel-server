@@ -17,6 +17,14 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+$router->group(['prefix' => 'auth'], function ($router) {
+    $router->post('register', 'Auth\AuthController@register');
+    $router->post('login', 'Auth\AuthController@login');
+    $router->post('logout', 'Auth\AuthController@logout');
+    $router->post('refresh', 'Auth\AuthController@refresh');
+    $router->get('user', 'Auth\AuthController@me');
+});
+
 $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
     $router->group(['prefix' => 'chambres'], function () use ($router) {
         $router->get('/', 'GestionChambre\ChambresController@getAll');
@@ -66,6 +74,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
         $router->post('new', 'Reception\ReservationsController@insert');
         $router->delete('{id}', 'Reception\ReservationsController@delete');
         //other
+        $router->put('{id}', 'Reception\ReservationsController@update');
         $router->put('abort/{id}', 'Reception\ReservationsController@annuler');
     });
 

@@ -29,8 +29,16 @@ $app->withEloquent();
 
 //cors config
 $app->middleware([
-    App\Http\Middleware\CorsMiddleware::class
- ]);
+    App\Http\Middleware\CorsMiddleware::class,
+]);
+
+// Auth
+$app->routeMiddleware([
+    "auth" => App\Http\Middleware\Authenticate::class,
+]);
+$app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------

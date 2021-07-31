@@ -52,19 +52,7 @@ class ReservationsController extends Controller
         $reservation->reserver();
         $reservation->save();
         $message = "La chambre $chambre->nom a été attribuée avec succès, code: $reservation->code";
-        $reservation = Reservation::with('chambreLinked', 'clientLinked')->find($reservation->id);
-        return response()->json([
-            'message' => $message,
-            'reservation' => [
-                'id' => $reservation->id,
-                'code' => $reservation->code,
-                'status' => $reservation->status,
-                'chambre' => ['id' => $reservation->chambreLinked->id, 'nom' => $reservation->chambreLinked->nom],
-                'client' => ['id' => $reservation->clientLinked->id, 'nom' => $reservation->clientLinked->nom],
-                'entree' => $reservation->entree,
-                'sortie' => $reservation->sortie,
-            ],
-        ]);
+        return response()->json(['message' => $message]);
     }
 
     public function getOne(int $id)
@@ -75,9 +63,14 @@ class ReservationsController extends Controller
         return response()->json(['reservation' => $reservation]);
     }
 
-    public function update(Request $request)
+    public function update(int $id, Request $request)
     {
-
+        $reservation = Reservation::find($id);
+        $reservation->entree = $request->entree;
+        $reservation->sortie = $request->sortie;
+        $reservation->save();
+        $message = "La reservation $reservation->code a été modifiée avec succès.";
+        return response()->json(['message' => $message]);
     }
 
     public function annuler(int $id)

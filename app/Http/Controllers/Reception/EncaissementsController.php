@@ -20,6 +20,32 @@ class EncaissementsController extends Controller
 
     }
 
+    public static function setReservationStatus($encaissement, Request $request)
+    {
+        $reservation = Reservation::with(['chambreLinked.prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->find($request->reservation);
+        if ((int) $request->dejaVerse < (int) $request->totalVerse) {
+            $encaissement->en_cours();
+        } else {
+            $encaissement->solder();
+        }
+        $encaissement->save();
+    }
+
+    public static function setAttributionStatus($encaissement, $request)
+    {
+        $attribution = Attribution::with(['chambreLinked.prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->find($request->attribution);
+        if ((int) $request->dejaVerse < (int) $request->montantApayer) {
+            $encaissement->en_cours();
+        } else {
+            $encaissement->solder();
+        }
+        $encaissement->save();
+    }
+
     public function getAll()
     {
         $encaissements = Encaissement::with([
@@ -31,54 +57,41 @@ class EncaissementsController extends Controller
 
     public function insert(Request $request)
     {
-        // $request->mode === 'reserve' ? $rules = array_merge(Versement::RULES, ['reservation' => 'required']) : $rules = array_merge(Versement::RULES, ['attribution' => 'required']);
-        //$this->validate($request, $rules);
         if (isset($request->reservation)) {
             $encaissement = Encaissement::where('reservation', $request->reservation)->first();
             if (empty($encaissement)) {
                 $encaissement = new Encaissement($request->all());
-                $reservation = Reservation::with(['chambreLinked.prixList' => function ($query) {
-                    return $query->orderBy('id', 'DESC');
-                }])->find($request->reservation);
-                if ((int) $reservation->chambreLinked->prixList[0]->montant * $reservation->entree->diffInDays($reservation->sortie) > $request->montant) {
-                    $encaissement->en_cours();
-                } else {
-                    $encaissement->solder();
-                }
-                $encaissement->save();
             }
+            self::setReservationStatus($encaissement, $request);
             $versement = new Versement($request->all());
             $versement->encaissement = $encaissement->id;
             $versement->save();
             $message = "La caisse de la réception a enregistrée le versement avec succès, code: $encaissement->code pour la somme de $versement->montant FCFA";
-            $encaissement = Encaissement::with('versements')->find($encaissement->id);
+            $encaissement = Encaissement::with(['versements' => function ($query) {
+                return $query->orderBy('id', 'DESC');
+            }])->find($encaissement->id);
             return response()->json([
                 'message' => $message,
-                'versements' => $encaissement->versements,
+                'versement' => $encaissement->versements[0],
+                'status' => $encaissement->status,
             ]);
-
         } else {
             $encaissement = Encaissement::where('attribution', $request->reservation)->first();
             if (empty($encaissement)) {
-                $attribution = Attribution::with(['chambreLinked.prixList' => function ($query) {
-                    return $query->orderBy('id', 'DESC');
-                }])->find($request->attribution);
-                if ((int) $attribution->chambreLinked->prixList[0]->montant * $attribution->entree->diffInDays($attribution->sortie) > $request->montant) {
-                    $encaissement->en_cours();
-                } else {
-                    $encaissement->solder();
-                }
-                $encaissement->save();
+                $encaissement = new Encaissement($request->all());
             }
+            self::setAttributionStatus($encaissement, $request);
             $versement = new Versement($request->all());
             $versement->encaissement = $encaissement->id;
             $versement->save();
             $message = "La caisse de la réception a enregistrée le versement avec succès, code: $encaissement->code pour la somme de $versement->montant FCFA";
-            //besoin paiementReception
-            $encaissement = Encaissement::with('versements')->find($encaissement->id);
+            $encaissement = Encaissement::with(['versements' => function ($query) {
+                return $query->orderBy('id', 'DESC');
+            }])->find($encaissement->id);
             return response()->json([
                 'message' => $message,
-                'versements' => $encaissement->versements,
+                'versement' => $encaissement->versements[0],
+                'status' => $encaissement->status,
             ]);
         }
     }

@@ -44,11 +44,15 @@ class EncaissementsController extends Controller
         foreach ($request->plats as $article) {
             $encaissement->plats()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
         }
-        foreach ($request->tournees as $article) {
-            $encaissement->tournees()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+        if (isset($request->tournees)) {
+            foreach ($request->tournees as $article) {
+                $encaissement->tournees()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+            }
         }
-        foreach ($request->cocktails as $article) {
-            $encaissement->cocktails()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+        if (isset($request->cocktails)) {
+            foreach ($request->cocktails as $article) {
+                $encaissement->cocktails()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+            }
         }
         $message = "La caisse a enregistrée avec succès la consommation, code: $encaissement->nom";
         $encaissement = Encaissement::with('plats', 'produits', 'cocktails', 'tournees')->find($encaissement->id);
@@ -64,6 +68,7 @@ class EncaissementsController extends Controller
                 'plats' => $encaissement->plats,
                 'cocktails' => $encaissement->cocktails,
                 'tournees' => $encaissement->tournees,
+                'zone' => $encaissement->zone,
             ],
         ]);
     }
