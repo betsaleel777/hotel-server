@@ -20,12 +20,12 @@ class EncaissementsController extends Controller
 
     }
 
-    public static function setReservationStatus($encaissement, Request $request)
+    public static function setReservationStatus($encaissement, Request $request): void
     {
         $reservation = Reservation::with(['chambreLinked.prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }])->find($request->reservation);
-        if ((int) $request->dejaVerse < (int) $request->totalVerse) {
+        if ((int) $request->dejaVerse < (int) $request->montantApayer) {
             $encaissement->en_cours();
         } else {
             $encaissement->solder();
@@ -33,7 +33,7 @@ class EncaissementsController extends Controller
         $encaissement->save();
     }
 
-    public static function setAttributionStatus($encaissement, $request)
+    public static function setAttributionStatus($encaissement, $request): void
     {
         $attribution = Attribution::with(['chambreLinked.prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
@@ -51,7 +51,7 @@ class EncaissementsController extends Controller
         $encaissements = Encaissement::with([
             'attributionLinked.clientLinked', 'attributionLinked.chambreLinked',
             'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
-            'anterieur', 'versements'])->get();
+            'anterieur', 'versements.mobile'])->get();
         return response()->json(['encaissements' => $encaissements]);
     }
 
@@ -69,14 +69,14 @@ class EncaissementsController extends Controller
             $message = "La caisse de la réception a enregistrée le versement avec succès, code: $encaissement->code pour la somme de $versement->montant FCFA";
             $encaissement = Encaissement::with(['versements' => function ($query) {
                 return $query->orderBy('id', 'DESC');
-            }])->find($encaissement->id);
+            }, 'versements.mobile'])->find($encaissement->id);
             return response()->json([
                 'message' => $message,
                 'versement' => $encaissement->versements[0],
                 'status' => $encaissement->status,
             ]);
         } else {
-            $encaissement = Encaissement::where('attribution', $request->reservation)->first();
+            $encaissement = Encaissement::where('attribution', $request->attribution)->first();
             if (empty($encaissement)) {
                 $encaissement = new Encaissement($request->all());
             }
@@ -87,7 +87,7 @@ class EncaissementsController extends Controller
             $message = "La caisse de la réception a enregistrée le versement avec succès, code: $encaissement->code pour la somme de $versement->montant FCFA";
             $encaissement = Encaissement::with(['versements' => function ($query) {
                 return $query->orderBy('id', 'DESC');
-            }])->find($encaissement->id);
+            }, 'versements.mobile'])->find($encaissement->id);
             return response()->json([
                 'message' => $message,
                 'versement' => $encaissement->versements[0],

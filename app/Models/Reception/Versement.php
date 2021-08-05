@@ -2,6 +2,7 @@
 
 namespace App\Models\Reception;
 
+use App\Models\Caisse\MobileMoney;
 use Illuminate\Database\Eloquent\Model;
 
 class Versement extends Model
@@ -12,15 +13,20 @@ class Versement extends Model
      * @var array
      */
     protected $fillable = [
-        'montant', 'encaissement',
+        'montant', 'encaissement', 'mobile_money', 'espece', 'cheque', 'monnaie',
     ];
 
     const RULES = [
-        'montant' => 'required',
+        'montant' => 'required', 'monnaie' => 'required',
     ];
 
     public function encaissementLinked()
     {
         return $this->belongsTo(Encaissement::class, 'encaissement');
+    }
+
+    public function mobile()
+    {
+        return $this->belongsTo(MobileMoney::class, 'mobile_money');
     }
 }

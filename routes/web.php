@@ -190,6 +190,12 @@ $router->group(['prefix' => 'caisses'], function () use ($router) {
         $router->put('{id}', 'Caisse\EncaissementsController@update');
         $router->delete('{id}', 'Caisse\EncaissementsController@delete');
     });
+    $router->group(['prefix' => 'mobilesMoney'], function () use ($router) {
+        $router->get('/', 'Caisse\MobileMoneyController@getAll');
+        $router->post('new', 'Caisse\MobileMoneyController@insert');
+        $router->put('{id}', 'Caisse\MobileMoneyController@update');
+        $router->delete('{id}', 'Caisse\MobileMoneyController@delete');
+    });
 });
 
 $router->group(['prefix' => 'parametre'], function () use ($router) {

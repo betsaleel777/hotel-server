@@ -64,7 +64,7 @@ class AttributionsController extends Controller
             return $query->orderBy('id', 'DESC');
         },
             'consommation.produits', 'consommation.plats', 'consommation.cocktails',
-            'consommation.tournees', 'encaissement.reservationLinked', 'encaissement.versements'])->find($id);
+            'consommation.tournees', 'encaissement.reservationLinked', 'encaissement.versements.mobile'])->find($id);
         return response()->json(['attribution' => $attribution]);
     }
 

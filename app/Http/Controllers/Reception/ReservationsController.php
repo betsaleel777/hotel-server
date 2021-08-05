@@ -59,7 +59,7 @@ class ReservationsController extends Controller
     {
         $reservation = Reservation::with(['chambreLinked', 'clientLinked.pieces' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }, 'encaissement.reservationLinked', 'encaissement.versements'])->find($id);
+        }, 'encaissement.reservationLinked', 'encaissement.versements.mobile'])->find($id);
         return response()->json(['reservation' => $reservation]);
     }
 

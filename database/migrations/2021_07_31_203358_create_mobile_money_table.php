@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateVersementsTable extends Migration
+class CreateMobileMoneyTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,9 @@ class CreateVersementsTable extends Migration
      */
     public function up()
     {
-        Schema::create('versements', function (Blueprint $table) {
+        Schema::create('mobile_money', function (Blueprint $table) {
             $table->id();
-            $table->unsignedinteger('montant');
-            $table->unsignedBigInteger('encaissement');
-            $table->foreign('encaissement')->references('id')->on('encaissements_receptions')->onDelete('cascade');
+            $table->string('nom', 30);
             $table->timestamps();
         });
     }
@@ -29,6 +27,6 @@ class CreateVersementsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('versements');
+        Schema::dropIfExists('mobile_money');
     }
 }
