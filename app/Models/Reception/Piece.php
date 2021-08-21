@@ -18,9 +18,6 @@ class Piece extends Model
     const RULES = [
         'nature' => 'required',
         'numero_piece' => 'required|unique:pieces,numero_piece',
-        'delivre_le' => 'required',
-        'expire_le' => 'required',
-        'lieu_piece' => 'required',
     ];
 
     public static function regles(int $id)
@@ -28,9 +25,6 @@ class Piece extends Model
         return [
             'nature' => 'required',
             'numero_piece' => 'required|unique:pieces,numero_piece,' . $id,
-            'delivre_le' => 'required',
-            'expire_le' => 'required',
-            'lieu_piece' => 'required',
         ];
     }
 

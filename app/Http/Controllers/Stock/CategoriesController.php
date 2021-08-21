@@ -39,13 +39,27 @@ class CategoriesController extends Controller
 
     }
 
-    public function update(Request $request)
+    public function update(int $id, Request $request)
     {
-
+        $this->validate($request, Categorie::regles($id));
+        $categorie = Categorie::find($id);
+        $categorie->nom = $request->nom;
+        $categorie->save();
+        $message = "La categorie de chambre $categorie->nom a été crée avec succes.";
+        return response()->json([
+            'message' => $message,
+            'categorie' => ['id' => $request->id, 'nom' => $request->nom],
+        ]);
     }
 
-    public function delete()
+    public function delete(int $id)
     {
-
+        $categorie = Categorie::find($id);
+        $categorie->delete();
+        $message = "la catégorie de chambre $categorie->nom a été supprimée avec succès";
+        return response()->json([
+            'message' => $message,
+            'categorie' => ['id' => $categorie->id, 'nom' => $categorie->nom],
+        ]);
     }
 }

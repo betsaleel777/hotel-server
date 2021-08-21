@@ -21,12 +21,7 @@ class Client extends Model
         'prenom' => 'required',
         'naissance' => 'required',
         'contact' => 'required|unique:clients,contact',
-        'pere' => 'required',
-        'mere' => 'required',
-        'domicile' => 'required',
-        'pays' => 'required',
         'email' => 'nullable|email|unique:clients,email',
-        'profession' => 'required',
     ];
 
     public static function regles(int $id)
@@ -36,12 +31,7 @@ class Client extends Model
             'prenom' => 'required',
             'naissance' => 'required',
             'contact' => 'required|unique:clients,contact,' . $id,
-            'pere' => 'required',
-            'mere' => 'required',
-            'domicile' => 'required',
-            'pays' => 'required',
             'email' => 'nullable|email|unique:clients,email,' . $id,
-            'profession' => 'required',
         ];
     }
 

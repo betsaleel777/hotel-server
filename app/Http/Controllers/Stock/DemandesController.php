@@ -70,12 +70,12 @@ class DemandesController extends Controller
 
     public function getAll()
     {
-        $demandes = Demande::with('produits', 'departementLinked')->get();
+        $demandes = Demande::with('produits', 'departementLinked', 'sortie.produits')->get();
         return response()->json(['demandes' => $demandes]);
     }
     public function getByDepartement(int $departement)
     {
-        $demandes = Demande::with('produits', 'departementLinked')->where('departement', $departement)->get();
+        $demandes = Demande::with('produits', 'departementLinked', 'sortie.produits')->where('departement', $departement)->get();
         return response()->json(['demandes' => $demandes]);
     }
 

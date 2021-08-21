@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        \Illuminate\Console\KeyGenerateCommand::class,
     ];
 
     /**
@@ -26,4 +26,5 @@ class Kernel extends ConsoleKernel
     {
         //
     }
+
 }

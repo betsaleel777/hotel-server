@@ -25,4 +25,11 @@ class CategorieChambre extends Model
     {
         return $this->hasMany(Chambre::class, 'categorie');
     }
+
+    public static function regles(int $id)
+    {
+        return [
+            'nom' => 'required|unique:categories_chambres,nom,' . $id,
+        ];
+    }
 }

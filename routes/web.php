@@ -17,13 +17,12 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->group(['prefix' => 'auth'], function ($router) {
-    $router->post('register', 'Auth\AuthController@register');
-    $router->post('login', 'Auth\AuthController@login');
+$router->group(['middleware' => ['auth']], function ($router) {
     $router->post('logout', 'Auth\AuthController@logout');
-    $router->post('refresh', 'Auth\AuthController@refresh');
-    $router->get('user', 'Auth\AuthController@me');
+    $router->get('user', 'Auth\AuthController@profile');
 });
+$router->post('login', 'Auth\AuthController@login');
+$router->post('refresh', 'Auth\AuthController@refresh');
 
 $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
     $router->group(['prefix' => 'chambres'], function () use ($router) {
@@ -63,7 +62,6 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
         $router->delete('{id}', 'Reception\AttributionsController@delete');
         //other
         $router->put('free/{id}', 'Reception\AttributionsController@liberer');
-
     });
 
     $router->group(['prefix' => 'reservations'], function () use ($router) {
@@ -87,7 +85,6 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 });
 
 $router->group(['prefix' => 'stock'], function () use ($router) {
-
     $router->group(['prefix' => 'produits'], function () use ($router) {
         $router->get('/', 'Stock\ProduitsController@getAll');
         $router->get('/inventaire', 'Stock\ProduitsController@inventaire');
@@ -99,7 +96,6 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->put('{id}', 'Stock\ProduitsController@update');
         $router->delete('{id}', 'Stock\ProduitsController@delete');
     });
-
     $router->group(['prefix' => 'achats'], function () use ($router) {
         $router->get('/', 'Stock\AchatsController@getAll');
         $router->post('new', 'Stock\AchatsController@insert');
@@ -109,14 +105,12 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->get('en-stock/{id}', 'Stock\AchatsController@quantiteStock');
         $router->get('produit/{id}', 'Stock\AchatsController@getFromProduit');
     });
-
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->get('/', 'Stock\CategoriesController@getAll');
         $router->post('new', 'Stock\CategoriesController@insert');
         $router->put('{id}', 'Stock\CategoriesController@update');
         $router->delete('{id}', 'Stock\CategoriesController@delete');
     });
-
     $router->group(['prefix' => 'demandes'], function () use ($router) {
         $router->get('/', 'Stock\DemandesController@getAll');
         $router->get('/{departement}', 'Stock\DemandesController@getByDepartement');
@@ -128,14 +122,12 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->post('new', 'Stock\DemandesController@insert');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');
     });
-
     $router->group(['prefix' => 'sorties'], function () use ($router) {
         $router->get('/', 'Stock\SortiesController@getAll');
         $router->put('{id}', 'Stock\SortiesController@update');
         $router->post('demande', 'Stock\DemandesController@insertFromDemande');
         $router->post('new', 'Stock\SortiesController@insert');
     });
-
 });
 
 $router->group(['prefix' => 'restaurant'], function () use ($router) {
@@ -205,5 +197,29 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
         $router->post('new', 'Parametre\DepartementsController@insert');
         $router->put('{id}', 'Parametre\DepartementsController@update');
         $router->delete('{id}', 'Parametre\DepartementsController@delete');
+    });
+
+    $router->group(['prefix' => 'categories'], function () use ($router) {
+        $router->group(['prefix' => 'chambres'], function () use ($router) {
+            $router->get('/', 'GestionChambre\CategoriesController@getAll');
+            $router->get('/{name}', 'GestionChambre\CategoriesController@getByName');
+            $router->post('new', 'GestionChambre\CategoriesController@insert');
+            $router->put('{id}', 'GestionChambre\CategoriesController@update');
+            $router->delete('{id}', 'GestionChambre\CategoriesController@delete');
+        });
+        $router->group(['prefix' => 'articles'], function () use ($router) {
+            $router->get('/', 'Stock\CategoriesController@getAll');
+            $router->get('/{name}', 'Stock\CategoriesController@getByName');
+            $router->post('new', 'Stock\CategoriesController@insert');
+            $router->put('{id}', 'Stock\CategoriesController@update');
+            $router->delete('{id}', 'Stock\CategoriesController@delete');
+        });
+        $router->group(['prefix' => 'plats'], function () use ($router) {
+            $router->get('/', 'Restaurant\CategoriesController@getAll');
+            $router->get('/{name}', 'Restaurant\CategoriesController@getByName');
+            $router->post('new', 'Restaurant\CategoriesController@insert');
+            $router->put('{id}', 'Restaurant\CategoriesController@update');
+            $router->delete('{id}', 'Restaurant\CategoriesController@delete');
+        });
     });
 });

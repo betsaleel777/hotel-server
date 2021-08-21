@@ -25,7 +25,6 @@ class Reservation extends Model
         'client' => 'required',
     ];
     const RESERVEE = 'reservée';
-    const OCCUPEE = 'occupée';
     const ANNULEE = 'annulée';
     const TERMINEE = 'terminée';
 
@@ -39,11 +38,6 @@ class Reservation extends Model
     public function reserver()
     {
         $this->attributes['status'] = self::RESERVEE;
-    }
-
-    public function occuper()
-    {
-        $this->attributes['status'] = self::OCCUPEE;
     }
 
     public function terminer()
@@ -63,7 +57,7 @@ class Reservation extends Model
 
     public function scopeUsed($query)
     {
-        return $query->where('status', self::RESERVEE)->orWhere('status', self::OCCUPEE);
+        return $query->where('status', self::RESERVEE)->orWhere('status', self::TERMINEE);
     }
 
     public function chambreLinked()

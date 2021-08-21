@@ -25,4 +25,11 @@ class Categorie extends Model
     {
         return $this->hasMany(Plat::class, 'categorie');
     }
+
+    public static function regles(int $id)
+    {
+        return [
+            'nom' => 'required|unique:categories_plats,nom,' . $id,
+        ];
+    }
 }
