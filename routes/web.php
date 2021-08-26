@@ -222,4 +222,29 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
             $router->delete('{id}', 'Restaurant\CategoriesController@delete');
         });
     });
+
+    $router->group(['prefix' => 'users'], function () use ($router) {
+        $router->get('/', 'Parametre\UsersController@getAll');
+        $router->get('/{id}', 'Parametre\UsersController@getOne');
+        $router->post('new', 'Parametre\UsersController@insert');
+        $router->put('{id}', 'Parametre\UsersController@update');
+        $router->delete('{id}', 'Parametre\UsersController@delete');
+    });
+
+    $router->group(['prefix' => 'roles'], function () use ($router) {
+        $router->get('/', 'Parametre\RolesController@getAll');
+        $router->get('/{id}', 'Parametre\RolesController@getOne');
+        $router->post('new', 'Parametre\RolesController@insert');
+        $router->post('assign', 'Parametre\RolesController@assign');
+        $router->put('{id}', 'Parametre\RolesController@update');
+        $router->delete('{id}', 'Parametre\RolesController@delete');
+    });
+
+    $router->group(['prefix' => 'permissions'], function () use ($router) {
+        $router->get('/', 'Parametre\PermissionsController@getAll');
+        $router->get('/{id}', 'Parametre\PermissionsController@getOne');
+        $router->post('new', 'Parametre\PermissionsController@insert');
+        $router->put('{id}', 'Parametre\PermissionsController@update');
+        $router->delete('{id}', 'Parametre\PermissionsController@delete');
+    });
 });

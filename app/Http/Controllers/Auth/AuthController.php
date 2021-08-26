@@ -2,7 +2,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
 
 // use Illuminate\Support\Facades\Http;
 
@@ -28,8 +30,11 @@ class AuthController extends Controller
         $credentials = request(['email', 'password']);
 
         if (!$token = Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'mot de passe ou utilisateur incorrecte', 'credentials' => $credentials], 401);
         }
+        $user = User::find(Auth::user()->id);
+        $user->connecter();
+        $user->save();
         return $this->respondWithToken($token);
     }
 
@@ -40,7 +45,22 @@ class AuthController extends Controller
      */
     public function profile()
     {
-        return response()->json(Auth::user());
+        $user = User::with('roles')->find(Auth::user()->id);
+        if (empty($user->hasRole('Super Admin'))) {
+            $permissions = $user->getPermissionsViaRoles();
+        } else {
+            $permissions = Permission::get();
+        }
+        $permissionsNames = array_column($permissions->all(), 'name');
+        $userInfos = [
+            'id' => $user->id,
+            'email' => $user->email,
+            'name' => $user->name,
+            'status' => $user->status,
+            'roles' => $user->roles,
+            'permissions' => $permissionsNames,
+        ];
+        return response()->json($userInfos);
     }
 
     /**
@@ -50,9 +70,11 @@ class AuthController extends Controller
      */
     public function logout()
     {
+        $user = User::find(Auth::user()->id);
+        $user->deconnecter();
+        $user->save();
         Auth::logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Vous ếtes bien déconnecté.']);
     }
 
     /**

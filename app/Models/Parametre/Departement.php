@@ -3,6 +3,7 @@
 namespace App\Models\Parametre;
 
 use App\Models\Stock\Demande;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Departement extends Model
@@ -38,4 +39,10 @@ class Departement extends Model
     {
         return $this->hasMany(Demande::class, 'demande');
     }
+
+    public function userLinked()
+    {
+        return $this->belongsTo(User::class, 'user');
+    }
+
 }
