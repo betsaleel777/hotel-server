@@ -62,6 +62,6 @@ class Sortie extends Model
 
     public function produits()
     {
-        return $this->belongsToMany(Produit::class, 'produits_sorties', 'sortie', 'produit')->withPivot('demandees', 'quantite')->withTimestamps();
+        return $this->belongsToMany(Produit::class, 'produits_sorties', 'sortie', 'produit')->withPivot('demandees', 'quantite', 'recues')->withTimestamps();
     }
 }

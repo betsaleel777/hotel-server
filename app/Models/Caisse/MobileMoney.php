@@ -19,7 +19,18 @@ class MobileMoney extends Model
 
     protected $table = 'mobile_money';
 
-    public function paiementReservation()
+    const RULES = [
+        'nom' => 'required|unique:mobile_money,nom',
+    ];
+
+    public static function regles(int $id)
+    {
+        return [
+            'nom' => 'required|unique:mobile_money,nom,' . $id,
+        ];
+    }
+
+    public function moyenMobile()
     {
         return $this->hasMany(Versement::class, 'mobile_money');
     }

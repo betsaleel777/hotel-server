@@ -45,7 +45,7 @@ class PlatsController extends Controller
         foreach ($request->ingredients as $ingredient) {
             $plat->produits()->attach($ingredient['id'], ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']]);
         }
-        $message = "le Plat $plat->code a été crée avec succès.";
+        $message = "le Plat $plat->nom a été crée avec succès.";
         $plat = Plat::with(['prix' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'categorieLinked', 'produits'])->find($plat->id);
@@ -97,7 +97,7 @@ class PlatsController extends Controller
             $toSync[$ingredient['id']] = ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']];
         }
         $plat->produits()->sync($toSync);
-        $message = "Le plat $plat->code a  été modifié avec succès.";
+        $message = "Le plat $plat->nom a  été modifié avec succès.";
         $plat = Plat::with(['prix' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'categorieLinked', 'produits'])->find($plat->id);
@@ -123,7 +123,7 @@ class PlatsController extends Controller
     {
         $plat = Plat::find($id);
         $plat->delete();
-        $message = "le plat $plat->code a été définitivement supprimé avec succès.";
+        $message = "le plat $plat->nom a été définitivement supprimé avec succès.";
         return response()->json(['message' => $message, 'plat' => ['id' => $plat->id, 'code' => $plat->code]]);
     }
 
@@ -131,7 +131,6 @@ class PlatsController extends Controller
     {
         $ingredients = new Collection($request->ingredients);
         $ids = array_column($request->ingredients, 'id');
-
         // vérification de l'existance d'un approvisionnement pour chaque ingredient de la liste qui compose le plat
         foreach ($ids as $id) {
             $ingredient = Produit::select('nom')->find($id);

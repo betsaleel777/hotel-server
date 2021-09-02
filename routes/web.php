@@ -37,6 +37,8 @@ $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->get('/', 'GestionChambre\CategoriesController@getAll');
         $router->post('new', 'GestionChambre\CategoriesController@insert');
+        $router->put('{id}', 'GestionChambre\CategoriesController@update');
+        $router->delete('{id}', 'GestionChambre\CategoriesController@delete');
     });
 });
 
@@ -59,15 +61,16 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
         $router->get('/', 'Reception\AttributionsController@getAll');
         $router->get('/{id}', 'Reception\AttributionsController@getOne');
         $router->post('new', 'Reception\AttributionsController@insert');
-        $router->delete('{id}', 'Reception\AttributionsController@delete');
-        //other
+        $router->put('{id}', 'Reception\AttributionsController@update');
         $router->put('free/{id}', 'Reception\AttributionsController@liberer');
+        $router->delete('{id}', 'Reception\AttributionsController@delete');
     });
 
     $router->group(['prefix' => 'reservations'], function () use ($router) {
         $router->get('/', 'Reception\ReservationsController@getAll');
         $router->get('reserved', 'Reception\ReservationsController@getReserved');
         $router->get('events', 'Reception\ReservationsController@getEvents');
+        $router->get('/used', 'Reception\ReservationsController@utilisees');
         $router->get('{id}', 'Reception\ReservationsController@getOne');
         $router->post('new', 'Reception\ReservationsController@insert');
         $router->delete('{id}', 'Reception\ReservationsController@delete');
@@ -124,7 +127,9 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
     });
     $router->group(['prefix' => 'sorties'], function () use ($router) {
         $router->get('/', 'Stock\SortiesController@getAll');
+        $router->get('from/{demande}', 'Stock\SortiesController@getFromDemande');
         $router->put('{id}', 'Stock\SortiesController@update');
+        $router->put('confirm/{id}', 'Stock\SortiesController@confirm');
         $router->post('demande', 'Stock\DemandesController@insertFromDemande');
         $router->post('new', 'Stock\SortiesController@insert');
     });

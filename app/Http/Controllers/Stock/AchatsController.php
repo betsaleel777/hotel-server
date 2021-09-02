@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
+use App\Models\Restaurant\Ingredient;
 use App\Models\Stock\Achat;
 use App\Models\Stock\Produit;
 use Illuminate\Http\Request;
@@ -35,8 +36,8 @@ class AchatsController extends Controller
         $achat = new achat($request->all());
         $achat->genererCode();
         $achat->save();
-        $message = "l' achat $achat->code a  été crée avec succès.";
         $achat = Achat::with('produit')->find($achat->id);
+        $message = "l' achat de l'article: $achat->produit->nom a  été crée avec succès.";
         return response()->json([
             'message' => $message,
             'achat' => [
@@ -75,7 +76,8 @@ class AchatsController extends Controller
     {
         $achat = Achat::find($id);
         $achat->delete();
-        $message = "l' achat $achat->code a été définitivement supprimé avec succès.";
+        $achat = Achat::with('produit')->find($achat->id);
+        $message = "l'achat $achat->produit->nom a été définitivement supprimé avec succès.";
         return response()->json(['message' => $message, 'achat' => ['id' => $achat->id, 'code' => $achat->code]]);
     }
 

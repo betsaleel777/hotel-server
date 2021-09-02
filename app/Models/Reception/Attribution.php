@@ -16,7 +16,7 @@ class Attribution extends Model
     protected $fillable = [
         'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'reservation', 'status', 'remise', 'prix',
     ];
-    protected $dates = ['entree', 'sortie'];
+    protected $dates = ['entree', 'sortie', 'date_liberation'];
     const RULES = [
         'accompagnants' => 'nullable|numeric',
         'entree' => 'required',

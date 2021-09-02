@@ -15,7 +15,7 @@ class Reservation extends Model
     protected $fillable = [
         'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'status', 'prix',
     ];
-    protected $dates = ['entree', 'sortie'];
+    protected $dates = ['entree', 'sortie', 'date_annulation'];
 
     const RULES = [
         'accompagnants' => 'nullable|numeric',

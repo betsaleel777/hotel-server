@@ -34,10 +34,10 @@ class Demande extends Model
         'departement' => 'required',
     ];
 
-    const REJETTEE = 'rejettée';
-    const ACCEPTEE = 'acceptée';
-    const LIVREE = 'livrée';
     const EN_COURS = 'en cours';
+    const REJETTEE = 'rejettée';
+    const LIVREE = 'livrée';
+    const CONFIRMEE = 'confirmée';
 
     public static function regles(int $id)
     {
@@ -54,9 +54,9 @@ class Demande extends Model
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
     }
 
-    public function accepter()
+    public function confirmer()
     {
-        $this->attributes['status'] = self::ACCEPTEE;
+        $this->attributes['status'] = self::CONFIRMEE;
     }
 
     public function traiter()

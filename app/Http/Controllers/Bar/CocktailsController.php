@@ -43,7 +43,7 @@ class CocktailsController extends Controller
         foreach ($request->ingredients as $ingredient) {
             $cocktail->tournees()->attach($ingredient['id'], ['quantite' => $ingredient['quantite']]);
         }
-        $message = "Le cocktail $cocktail->code a été crée avec succès.";
+        $message = "Le cocktail $cocktail->nom a été crée avec succès.";
         $cocktail = Cocktail::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'tournees'])->find($cocktail->id);
@@ -87,7 +87,7 @@ class CocktailsController extends Controller
             $toSync[$ingredient['id']] = ['quantite' => $ingredient['quantite']];
         }
         $cocktail->tournees()->sync($toSync);
-        $message = "Le cocktail $cocktail->code a été modifié avec succès.";
+        $message = "Le cocktail $cocktail->nom a été modifié avec succès.";
         $cocktail = Cocktail::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'tournees'])->find($cocktail->id);
@@ -108,7 +108,7 @@ class CocktailsController extends Controller
     {
         $cocktail = Cocktail::find($id);
         $cocktail->delete();
-        $message = "Le cocktail $cocktail->code, nommé $ a été supprimée avec succès.";
+        $message = "Le cocktail $cocktail->nom, nommé $ a été supprimée avec succès.";
         return response()->json([
             'message' => $message,
             'cocktail' => ['code' => $cocktail->code, 'id' => $cocktail->id],

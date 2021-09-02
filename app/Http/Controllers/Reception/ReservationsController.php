@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GestionChambre\Chambre;
 use App\Models\Reception\Attribution;
 use App\Models\Reception\Reservation;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ReservationsController extends Controller
@@ -29,8 +30,8 @@ class ReservationsController extends Controller
 
     public function getEvents()
     {
-        $reservations = Reservation::with('clientLinked', 'chambreLinked', 'attribution')->used()->get();
-        $attributions = Attribution::doesntHave('reservationLinked')->with('clientLinked', 'chambreLinked')->get();
+        $reservations = Reservation::with('clientLinked', 'chambreLinked', 'attribution')->reserved()->get();
+        $attributions = Attribution::with('clientLinked', 'chambreLinked')->isBusy()->get();
         $events = array_merge($reservations->all(), $attributions->all());
         return response()->json(['events' => $events]);
     }
@@ -51,7 +52,7 @@ class ReservationsController extends Controller
         $reservation->genererCode();
         $reservation->reserver();
         $reservation->save();
-        $message = "La chambre $chambre->nom a été attribuée avec succès, code: $reservation->code";
+        $message = "La chambre $chambre->nom a été attribuée avec succès";
         return response()->json(['message' => $message]);
     }
 
@@ -77,12 +78,10 @@ class ReservationsController extends Controller
     {
         $reservation = Reservation::with('chambreLinked')->find($id);
         $reservation->annuler();
+        $reservation->date_annulation = Carbon::now();
         $reservation->save();
         $message = 'la réservation ' . $reservation->chambreLinked->nom . ' a été annulée.';
-        return response()->json([
-            'message' => $message,
-            'reservation' => ['id' => $reservation->id, 'code' => $reservation->code],
-        ]);
+        return response()->json(['message' => $message]);
     }
 
     public function delete(int $id)
@@ -93,7 +92,15 @@ class ReservationsController extends Controller
             $attribution = Attribution::where('reservation', $reservation->id)->first();
             $attribution->delete();
         }
-        $message = 'la réservation ' . $reservation->code . ' de la chambre ' . $reservation->chambreLinked->nom . ' a été supprimée';
-        return response()->json(['message' => $message, 'reservation' => ['id' => $reservation->id, 'code' => $reservation->code]]);
+        $message = 'la réservation de la chambre ' . $reservation->chambreLinked->nom . ' a été supprimée';
+        return response()->json(['message' => $message]);
+    }
+
+    public function utilisees()
+    {
+        $attributions = Attribution::with('chambreLinked', 'clientLinked')->isBusy()->get();
+        $reservations = Reservation::with('chambreLinked', 'clientLinked')->reserved()->get();
+        $hebergements = array_merge($reservations->all(), $attributions->all());
+        return response()->json(['hebergements' => $hebergements]);
     }
 }

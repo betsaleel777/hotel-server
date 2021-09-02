@@ -87,7 +87,7 @@ class DemandesController extends Controller
         foreach ($request->articles as $article) {
             $demande->produits()->attach($article['id'], ['quantite' => $article['quantite']]);
         }
-        $message = "La demande, $demande->code a été crée avec succes.";
+        $message = "La demande, $demande->titre a été crée avec succes.";
         return response()->json(self::returning($demande->id, $message));
     }
 
@@ -109,7 +109,7 @@ class DemandesController extends Controller
         foreach ($request->articles as $article) {
             $sortie->produits()->attach($article['produit'], ['quantite' => $article['valeur'], 'demandees' => $article['quantite']]);
         }
-        $message = "La demande, $demande->code a été livrée.\n La sortie de stock $sortie->code a été crée avec succès.";
+        $message = "La demande, $demande->titre a été livrée.\n La sortie de stock $sortie->code a été crée avec succès.";
         return response()->json(self::returning($id, $message));
     }
 
@@ -118,7 +118,7 @@ class DemandesController extends Controller
         $demande = Demande::find($id);
         $demande->rejetter();
         $demande->save();
-        $message = "La demande, $demande->code a été rejetée.";
+        $message = "La demande, $demande->titre a été rejetée.";
         return response()->json(self::returning($id, $message));
     }
 
@@ -135,7 +135,7 @@ class DemandesController extends Controller
         ));
         //tournee encaissée à prendre en compte ici
         $articlesDelivered = DB::select(DB::Raw(
-            "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.quantite) AS quantite FROM produits_sorties ps
+            "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.recues) AS quantite FROM produits_sorties ps
              INNER JOIN produits p ON p.id=ps.produit GROUP BY ps.produit,p.nom,p.code,p.mesure"
         ));
         $articles = [];
@@ -209,7 +209,7 @@ class DemandesController extends Controller
                 "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
                  INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
                  WHERE e.departement =$departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
                  ,IFNULL(t.contenance,0) as contenance FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie
                  INNER JOIN produits p ON p.id=ps.produit LEFT JOIN tournees t ON t.produit =ps.produit
                  LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance"
@@ -256,7 +256,7 @@ class DemandesController extends Controller
                 "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
                  INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
                  WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
                  FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
                  LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement
                  GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
@@ -300,7 +300,7 @@ class DemandesController extends Controller
             "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
              INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
              WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-             SELECT p.id,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS quantite, s.departement,p.prix_vente
+             SELECT p.id,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS quantite, s.departement,p.prix_vente
              FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
              LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement AND p.pour_plat=0 AND p.pour_tournee=0
              GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
@@ -309,7 +309,7 @@ class DemandesController extends Controller
         //     "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
         //      INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
         //      WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-        //      SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(t.contenance,0) as contenance,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+        //      SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(t.contenance,0) as contenance,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
         //      FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
         //      LEFT JOIN tournees t ON t.produit =ps.produit LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement = $departement AND p.pour_plat=0
         //      GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance"
@@ -357,7 +357,7 @@ class DemandesController extends Controller
 // WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
 // INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
 // WHERE e.departement =$departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-// SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.quantite-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+// SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
 // ,IFNULL(t.contenance,0) as contenance FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie
 // INNER JOIN produits p ON p.id=ps.produit LEFT JOIN tournees t ON t.produit =ps.produit
 // LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance

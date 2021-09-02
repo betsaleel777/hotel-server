@@ -17,8 +17,8 @@ class CreatePiecesTable extends Migration
             $table->id();
             $table->string('nature');
             $table->string('numero_piece');
-            $table->date('delivre_le');
-            $table->date('expire_le');
+            $table->date('delivre_le')->nullable();
+            $table->date('expire_le')->nullable();
             $table->string('lieu_piece')->nullable();
             $table->string('maker')->nullable();
             $table->date('entree_pays')->nullable();

@@ -44,7 +44,7 @@ class TourneesController extends Controller
         $tournee = Tournee::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'produitLinked'])->find($tournee->id);
-        $message = "La Tournee $tournee->code ($tournee->titre) a été crée avec succes.";
+        $message = "La Tournee $tournee->titre ($tournee->titre) a été crée avec succes.";
         return response()->json([
             'message' => $message,
             'tournee' => [
@@ -86,7 +86,7 @@ class TourneesController extends Controller
         $tournee = Tournee::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'produitLinked'])->find($tournee->id);
-        $message = "La Tournee $tournee->code ($tournee->titre) a été modifiée avec succes.";
+        $message = "La Tournee $tournee->titre ($tournee->titre) a été modifiée avec succes.";
         return response()->json([
             'message' => $message,
             'tournee' => [
@@ -105,7 +105,7 @@ class TourneesController extends Controller
     {
         $tournee = Tournee::find($id);
         $tournee->delete();
-        $message = "La tournee $tournee->code a été supprimée avec succès.";
+        $message = "La tournee $tournee->titre a été supprimée avec succès.";
         return response()->json([
             'message' => $message,
             'tournee' => ['code' => $tournee->code, 'id' => $tournee->id],

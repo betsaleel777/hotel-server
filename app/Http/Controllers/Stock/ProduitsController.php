@@ -60,7 +60,7 @@ class ProduitsController extends Controller
         $prix = new Prix(['montant' => $request->montant, 'produit' => $produit->id]);
         $prix->save();
 
-        $message = "le produit $produit->code a  été crée avec succès.";
+        $message = "le produit $produit->nom a  été crée avec succès.";
         $produit = Produit::with('categorieLinked')->find($produit->id);
         return response()->json([
             'message' => $message,
@@ -109,7 +109,7 @@ class ProduitsController extends Controller
         $prix = new Prix(['montant' => $request->montant, 'produit' => $produit->id]);
         $prix->save();
 
-        $message = "le produit $produit->code a  été modifié avec succès.";
+        $message = "le produit a été modifié avec succès.";
         $produit = Produit::with(['categorieLinked'])->find($produit->id);
         return response()->json([
             'message' => $message,
@@ -135,7 +135,7 @@ class ProduitsController extends Controller
     {
         $produit = Produit::find($id);
         $produit->delete();
-        $message = "le produit $produit->code a été définitivement supprimé avec succès.";
+        $message = "le produit $produit->nom a été définitivement supprimé avec succès.";
         return response()->json(['message' => $message, 'produit' => ['id' => $produit->id, 'code' => $produit->code]]);
     }
 
@@ -225,7 +225,7 @@ class ProduitsController extends Controller
              GROUP BY a.ingredient,p.nom,p.code,p.mesure,p.prix_vente,p.id"
         ));
         $articlesDelivered = DB::select(DB::Raw(
-            "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.quantite) AS quantite FROM produits_sorties ps
+            "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.recues) AS quantite FROM produits_sorties ps
              INNER JOIN produits p ON p.id=ps.produit GROUP BY ps.produit,p.nom,p.code,p.mesure"
         ));
         $articles = [];

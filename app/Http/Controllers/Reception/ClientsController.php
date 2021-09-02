@@ -36,7 +36,7 @@ class ClientsController extends Controller
         $piece = new Piece($request->all());
         $piece->client = $client->id;
         $piece->save();
-        $message = "le client $client->code a  été crée avec succès.";
+        $message = "le client $client->nom a  été crée avec succès.";
         $client = Client::with(['pieces' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }])->find($client->id);
@@ -76,7 +76,7 @@ class ClientsController extends Controller
         $piece = Piece::find($request->piece['id']);
         $piece->fill($request->all());
         $piece->save();
-        $message = "le client $client->code a  modifiée avec succès.";
+        $message = "le client $client->nom a  modifiée avec succès.";
         $client = Client::with(['pieces' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }])->find($client->id);
@@ -105,7 +105,7 @@ class ClientsController extends Controller
     {
         $client = Client::find($id);
         $client->delete();
-        $message = "le client $client->code a été définitivement supprimé avec succès.";
+        $message = "le client $client->nom a été définitivement supprimé avec succès.";
         return response()->json(['message' => $message, 'client' => ['id' => $client->id, 'code' => $client->code]]);
     }
 }

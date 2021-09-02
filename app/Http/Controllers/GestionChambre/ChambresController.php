@@ -80,19 +80,8 @@ class ChambresController extends Controller
         $chambre = Chambre::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'categorieLinked'])->find($chambre->id);
-        $message = "La chambre $chambre->code a été crée avec succes.";
-        return response()->json([
-            'message' => $message,
-            'chambre' => [
-                'id' => $chambre->id,
-                'code' => $chambre->code,
-                'status' => $chambre->status,
-                'nom' => $chambre->nom,
-                'categorie' => $chambre->categorieLinked->id,
-                'standing' => $chambre->categorieLinked->nom,
-                'montant' => $chambre->prixList[0]->montant,
-            ],
-        ]);
+        $message = "La chambre $chambre->nom a été crée avec succes.";
+        return response()->json(['message' => $message]);
     }
 
     public function getOne(int $id)
@@ -122,27 +111,15 @@ class ChambresController extends Controller
         $chambre = Chambre::with(['prixList' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }, 'categorieLinked'])->find($chambre->id);
-        $retour = [
-            'id' => $chambre->id,
-            'code' => $chambre->code,
-            'status' => $chambre->status,
-            'nom' => $chambre->nom,
-            'categorie' => $chambre->categorieLinked->id,
-            'standing' => $chambre->categorieLinked->nom,
-            'montant' => $chambre->prixList[0]->montant,
-        ];
-        $message = "La chambre $chambre->code a été modifiée avec succès.";
-        return response()->json(['message' => $message, 'chambre' => $retour]);
+        $message = "La chambre a été modifiée avec succès.";
+        return response()->json(['message' => $message]);
     }
 
     public function delete(int $id)
     {
         $chambre = Chambre::find($id);
         $chambre->delete();
-        $message = "La chambre $chambre->code a été supprimée avec succès.";
-        return response()->json([
-            'message' => $message,
-            'chambre' => ['code' => $chambre->code, 'id' => $chambre->id],
-        ]);
+        $message = "La chambre $chambre->nom a été supprimée avec succès.";
+        return response()->json(['message' => $message]);
     }
 }

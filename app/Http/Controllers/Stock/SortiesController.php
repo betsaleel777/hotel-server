@@ -51,8 +51,21 @@ class SortiesController extends Controller
         foreach ($request->articles as $article) {
             $sortie->produits()->attach($article['id'], ['quantite' => (int) $article['valeur'], 'demandees' => (int) $article['quantite']]);
         }
-        $message = "La sortie, $sortie->code a été crée avec succes.";
+        $message = "La sortie, $sortie->titre a été crée avec succes.";
         return response()->json(self::returning($sortie->id, $message));
+    }
+
+    public function confirm(int $id, Request $request)
+    {
+        $demande = Demande::find($id);
+        $sortie = Sortie::where('demande', $id)->first();
+        foreach ($request->articles as $article) {
+            $sortie->produits()->updateExistingPivot($article['id'], ['recues' => $article['valeur']]);
+        }
+        $demande->confirmer();
+        $demande->save();
+        $message = "La reception de la demande a été enregistrée avec succès.";
+        return response()->json(['message' => $message]);
     }
 
     public function insert(Request $request)
@@ -64,8 +77,14 @@ class SortiesController extends Controller
         foreach ($request->articles as $article) {
             $sortie->produits()->attach($article['produit'], ['quantite' => (int) $article['quantite'], 'demandees' => 0]);
         }
-        $message = "La sortie, $sortie->code a été crée avec succes.";
+        $message = "La sortie, $sortie->titre a été crée avec succes.";
         return response()->json(self::returning($sortie->id, $message));
+    }
+
+    public function getFromDemande(int $demande)
+    {
+        $sortie = Sortie::with('produits', 'departementLinked', 'demandeLinked')->where('demande', $demande)->first();
+        return response()->json(['sortie' => $sortie]);
     }
 
     public function getOne(int $id)
