@@ -44,14 +44,19 @@ class Attribution extends Model
         $this->attributes['status'] = self::OCCUPEE;
     }
 
-    public function scopeIsFree($query)
+    public function scopeFree($query)
     {
         return $query->where('status', self::LIBEREE);
     }
 
-    public function scopeIsBusy($query)
+    public function scopeBusy($query)
     {
         return $query->where('status', self::OCCUPEE);
+    }
+
+    public function scopeBusyFree($query)
+    {
+        return $query->orWhere('status', self::OCCUPEE)->orWhere('status', self::LIBEREE);
     }
 
     public function chambreLinked()

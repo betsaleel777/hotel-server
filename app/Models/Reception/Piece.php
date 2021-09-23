@@ -33,4 +33,8 @@ class Piece extends Model
         return $this->belongsTo(Client::class, 'client');
     }
 
+    public function dossierVide()
+    {
+        return empty($this->attributes['nature']) and empty($this->attributes['numero_piece']);
+    }
 }

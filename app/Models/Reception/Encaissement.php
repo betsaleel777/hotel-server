@@ -19,9 +19,9 @@ class Encaissement extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'status', 'attribution', 'reservation', 'precedant',
+        'code', 'status', 'attribution', 'reservation', 'precedant', 'date_soldee'
     ];
-
+    protected $dates = ['date_soldee','created_at'];
     protected $table = 'encaissements_receptions';
 
     const SOLDEE = 'soldée';
@@ -42,6 +42,14 @@ class Encaissement extends Model
     public function en_cours()
     {
         $this->attributes['status'] = self::EN_COURS;
+    }
+
+    public function scopeSoldes($query){
+        return $query->where('status', self::SOLDEE);
+    }
+
+    public function scopeNonSoldes($query){
+        return $query->where('status', self::EN_COURS);
     }
 
     public function reservationLinked()

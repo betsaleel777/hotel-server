@@ -28,14 +28,6 @@ class ChambresController extends Controller
         return response()->json(['chambres' => $chambres]);
     }
 
-    public function getPassage()
-    {
-        $chambres = Chambre::with(['prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }])->libre()->get();
-        return response()->json(['chambres' => $chambres]);
-    }
-
     public function getReservation(string $debut, string $fin)
     {
         $chambresPrises = [];
@@ -86,7 +78,8 @@ class ChambresController extends Controller
 
     public function getOne(int $id)
     {
-
+        $chambre = Chambre::with(['prixList' => function ($query) {return $query->orderBy('id', 'DESC');}])->find($id);
+        return response()->json(['chambre' => $chambre]);
     }
 
     public function update(int $id, Request $request)

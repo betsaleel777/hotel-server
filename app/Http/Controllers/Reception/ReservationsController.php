@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Reception;
 use App\Http\Controllers\Controller;
 use App\Models\GestionChambre\Chambre;
 use App\Models\Reception\Attribution;
+use App\Models\Reception\Client;
 use App\Models\Reception\Reservation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,14 +32,16 @@ class ReservationsController extends Controller
     public function getEvents()
     {
         $reservations = Reservation::with('clientLinked', 'chambreLinked', 'attribution')->reserved()->get();
-        $attributions = Attribution::with('clientLinked', 'chambreLinked')->isBusy()->get();
+        $attributions = Attribution::with('clientLinked', 'chambreLinked')->busyFree()->get();
         $events = array_merge($reservations->all(), $attributions->all());
         return response()->json(['events' => $events]);
     }
 
     public function getReserved()
     {
-        $reservations = Reservation::reserved()->with('clientLinked', 'chambreLinked')->get();
+        $reservations = Reservation::reserved()->with(['clientLinked', 'chambreLinked.prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->get();
         return response()->json(['reservations' => $reservations]);
     }
 
@@ -52,7 +55,8 @@ class ReservationsController extends Controller
         $reservation->genererCode();
         $reservation->reserver();
         $reservation->save();
-        $message = "La chambre $chambre->nom a été attribuée avec succès";
+        $client = Client::find($request->client);
+        $message = "La chambre $chambre->nom a été attribuée avec succès au client $client->nom $client->prenom";
         return response()->json(['message' => $message]);
     }
 
@@ -66,21 +70,21 @@ class ReservationsController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $reservation = Reservation::find($id);
+        $reservation = Reservation::with('chambreLinked', 'clientLinked')->find($id);
         $reservation->entree = $request->entree;
         $reservation->sortie = $request->sortie;
         $reservation->save();
-        $message = "La reservation $reservation->code a été modifiée avec succès.";
+        $message = "La reservation de la chambre " . $reservation->chambreLinked->nom . " pour le client " . $reservation->chambreLinked->nom . " a été modifiée avec succès.";
         return response()->json(['message' => $message]);
     }
 
     public function annuler(int $id)
     {
-        $reservation = Reservation::with('chambreLinked')->find($id);
+        $reservation = Reservation::with('chambreLinked', 'clientLinked')->find($id);
         $reservation->annuler();
         $reservation->date_annulation = Carbon::now();
         $reservation->save();
-        $message = 'la réservation ' . $reservation->chambreLinked->nom . ' a été annulée.';
+        $message = 'la réservation ' . $reservation->chambreLinked->nom . ' pour le client' . $reservation->chambreLinked->nom . ' a été annulée.';
         return response()->json(['message' => $message]);
     }
 
@@ -98,7 +102,7 @@ class ReservationsController extends Controller
 
     public function utilisees()
     {
-        $attributions = Attribution::with('chambreLinked', 'clientLinked')->isBusy()->get();
+        $attributions = Attribution::with('chambreLinked', 'clientLinked')->Busy()->get();
         $reservations = Reservation::with('chambreLinked', 'clientLinked')->reserved()->get();
         $hebergements = array_merge($reservations->all(), $attributions->all());
         return response()->json(['hebergements' => $hebergements]);

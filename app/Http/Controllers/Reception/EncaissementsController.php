@@ -6,6 +6,7 @@ use App\Models\Reception\Attribution;
 use App\Models\Reception\Encaissement;
 use App\Models\Reception\Reservation;
 use App\Models\Reception\Versement;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class EncaissementsController extends Controller
@@ -22,26 +23,22 @@ class EncaissementsController extends Controller
 
     public static function setReservationStatus($encaissement, Request $request): void
     {
-        $reservation = Reservation::with(['chambreLinked.prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }])->find($request->reservation);
         if ((int) $request->dejaVerse < (int) $request->montantApayer) {
             $encaissement->en_cours();
         } else {
             $encaissement->solder();
+            $encaissement->date_soldee = Carbon::now();
         }
         $encaissement->save();
     }
 
     public static function setAttributionStatus($encaissement, $request): void
     {
-        $attribution = Attribution::with(['chambreLinked.prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }])->find($request->attribution);
         if ((int) $request->dejaVerse < (int) $request->montantApayer) {
             $encaissement->en_cours();
         } else {
             $encaissement->solder();
+            $encaissement->date_soldee = Carbon::now();
         }
         $encaissement->save();
     }
@@ -101,9 +98,37 @@ class EncaissementsController extends Controller
 
     }
 
+    public function getSoldes()
+    {
+        $encaissements = Encaissement::with([
+            'attributionLinked.clientLinked', 'attributionLinked.chambreLinked',
+            'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
+            'anterieur', 'versements.mobile'])->soldes()->get();
+        return response()->json(['encaissements' => $encaissements]);
+    }
+
+    public function getNonSoldes()
+    {
+        $encaissements = Encaissement::with([
+            'attributionLinked.clientLinked', 'attributionLinked.chambreLinked',
+            'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
+            'anterieur', 'versements.mobile'])->nonSoldes()->get();
+        return response()->json(['encaissements' => $encaissements]);
+    }
+
+    public function getByDate(string $date)
+    {
+        $format = Carbon::parse($date)->format('Y-m-d');
+        $encaissements = Encaissement::with([
+            'attributionLinked.clientLinked', 'attributionLinked.chambreLinked',
+            'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
+            'anterieur', 'versements.mobile'])->whereDate('date_soldee', $format)->get();
+        return response()->json(['encaissements' => $encaissements]);
+    }
+
     public function update(Request $request)
     {
-
+        return response()->json($request->all());
     }
 
     public function delete()

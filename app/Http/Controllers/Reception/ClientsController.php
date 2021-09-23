@@ -28,77 +28,50 @@ class ClientsController extends Controller
 
     public function insert(Request $request)
     {
-        $rules = array_merge(Client::RULES, Piece::RULES);
-        $this->validate($request, $rules);
+        $this->validate($request, Client::RULES);
         $client = new Client($request->all());
         $client->genererCode();
+        $client->statut();
         $client->save();
         $piece = new Piece($request->all());
-        $piece->client = $client->id;
-        $piece->save();
+        if (!$piece->dossierVide()) {
+            $piece->client = $client->id;
+            $piece->save();
+        } else {
+            $client->status = Client::INCOMPLET;
+            $client->save();
+        }
         $message = "le client $client->nom a  été crée avec succès.";
-        $client = Client::with(['pieces' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }])->find($client->id);
-        return response()->json([
-            'message' => $message,
-            'client' => [
-                'id' => $client->id,
-                'code' => $client->code,
-                'nom' => $client->nom,
-                'prenom' => $client->prenom,
-                'pere' => $client->pere,
-                'mere' => $client->mere,
-                'profession' => $client->profession,
-                'email' => $client->email,
-                'pays' => $client->pays,
-                'domicile' => $client->domicile,
-                'contact' => $client->contact,
-                'naissance' => $client->naissance,
-                'piece' => $client->pieces[0],
-            ],
-        ]);
+        return response()->json(['message' => $message, 'id' => $client->id]);
     }
 
     public function getOne(int $id)
     {
-        $client = Client::with('pieces')->find($id);
+        $client = Client::with(['pieces' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->find($id);
         return response()->json(['client' => $client]);
     }
 
     public function update(int $id, Request $request)
     {
-        $rules = array_merge(Client::regles($id), Piece::regles($request->piece['id']));
-        $this->validate($request, $rules);
+        $this->validate($request, Client::regles($id));
         $client = Client::find($id);
         $client->fill($request->all());
         $client->save();
-        $piece = Piece::find($request->piece['id']);
-        $piece->fill($request->all());
-        $piece->save();
+        if (isset($request->piece['id'])) {
+            $piece = Piece::find($request->piece['id']);
+            $piece->fill($request->all());
+            $piece->save();
+        } else {
+            $piece = new Piece($request->all());
+            $piece->client = $client->id;
+            $piece->save();
+        }
+        $client->statut();
+        $client->save();
         $message = "le client $client->nom a  modifiée avec succès.";
-        $client = Client::with(['pieces' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }])->find($client->id);
-        return response()->json([
-            'message' => $message,
-            'client' => [
-                'id' => $client->id,
-                'code' => $client->code,
-                'nom' => $client->nom,
-                'prenom' => $client->prenom,
-                'pere' => $client->pere,
-                'mere' => $client->mere,
-                'profession' => $client->profession,
-                'email' => $client->email,
-                'pays' => $client->pays,
-                'domicile' => $client->domicile,
-                'contact' => $client->contact,
-                'naissance' => $client->naissance,
-                'piece' => $client->pieces[0],
-            ],
-        ]);
-
+        return response()->json(['message' => $message]);
     }
 
     public function delete(int $id)

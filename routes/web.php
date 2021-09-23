@@ -27,12 +27,12 @@ $router->post('refresh', 'Auth\AuthController@refresh');
 $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
     $router->group(['prefix' => 'chambres'], function () use ($router) {
         $router->get('/', 'GestionChambre\ChambresController@getAll');
+        $router->get('{id}', 'GestionChambre\ChambresController@getOne');
+        $router->get('/reservation/{debut}-{fin}', 'GestionChambre\ChambresController@getReservation');
         $router->post('new', 'GestionChambre\ChambresController@insert');
         $router->put('{id}', 'GestionChambre\ChambresController@update');
         $router->delete('{id}', 'GestionChambre\ChambresController@delete');
         //other
-        $router->get('/passage', 'GestionChambre\ChambresController@getPassage');
-        $router->get('/reservation/{debut}-{fin}', 'GestionChambre\ChambresController@getReservation');
     });
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->get('/', 'GestionChambre\CategoriesController@getAll');
@@ -45,6 +45,7 @@ $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
 $router->group(['prefix' => 'reception'], function () use ($router) {
     $router->group(['prefix' => 'clients'], function () use ($router) {
         $router->get('/', 'Reception\ClientsController@getAll');
+        $router->get('{id}', 'Reception\ClientsController@getOne');
         $router->post('new', 'Reception\ClientsController@insert');
         $router->put('{id}', 'Reception\ClientsController@update');
         $router->delete('{id}', 'Reception\ClientsController@delete');
@@ -59,6 +60,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 
     $router->group(['prefix' => 'attributions'], function () use ($router) {
         $router->get('/', 'Reception\AttributionsController@getAll');
+        $router->get('/busy', 'Reception\AttributionsController@getBusy');
         $router->get('/{id}', 'Reception\AttributionsController@getOne');
         $router->post('new', 'Reception\AttributionsController@insert');
         $router->put('{id}', 'Reception\AttributionsController@update');
@@ -81,6 +83,9 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 
     $router->group(['prefix' => 'encaissements'], function () use ($router) {
         $router->get('/', 'Reception\EncaissementsController@getAll');
+        $router->get('/soldes', 'Reception\EncaissementsController@getSoldes');
+        $router->get('/non-soldes', 'Reception\EncaissementsController@getNonSoldes');
+        $router->get('{date}', 'Reception\EncaissementsController@getByDate');
         $router->post('new', 'Reception\EncaissementsController@insert');
         $router->put('{id}', 'Reception\EncaissementsController@update');
         $router->delete('{id}', 'Reception\EncaissementsController@delete');

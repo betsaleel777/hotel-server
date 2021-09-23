@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Reception;
 use App\Http\Controllers\Controller;
 use App\Models\GestionChambre\Chambre;
 use App\Models\Reception\Attribution;
+use App\Models\Reception\Client;
+use App\Models\Reception\Encaissement;
 use App\Models\Reception\Reservation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -22,9 +24,21 @@ class AttributionsController extends Controller
 
     public function getAll()
     {
-        $attributions = Attribution::with(['clientLinked', 'chambreLinked.prixList' => function ($query) {
+        $attributions = Attribution::with(['chambreLinked', 'clientLinked.pieces' => function ($query) {
             return $query->orderBy('id', 'DESC');
-        }])->get();
+        },
+            'consommation.produits', 'consommation.plats', 'consommation.cocktails',
+            'consommation.tournees', 'encaissement.reservationLinked', 'encaissement.versements.mobile'])->get();
+        return response()->json(['attributions' => $attributions]);
+    }
+
+    public function getBusy()
+    {
+        $attributions = Attribution::with(['chambreLinked', 'clientLinked.pieces' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        },
+            'consommation.produits', 'consommation.plats', 'consommation.cocktails',
+            'consommation.tournees', 'encaissement.reservationLinked', 'encaissement.versements.mobile'])->busy()->get();
         return response()->json(['attributions' => $attributions]);
     }
 
@@ -37,14 +51,20 @@ class AttributionsController extends Controller
         $attribution->occuper();
         $attribution->genererCode();
         $attribution->save();
-        if ($request->filled('reservation')) {
-            $reservation = Reservation::find($request->reservation);
+        if (!empty($request->reservation)) {
+            $reservation = Reservation::with('encaissement')->find($request->reservation);
             $reservation->terminer();
             $reservation->save();
+            if (isset($reservation->encaissement->id)) {
+                $encaissement = Encaissement::find($reservation->encaissement->id);
+                $encaissement->attribution = $attribution->id;
+                $encaissement->save();
+            }
         }
         $chambre->occuper();
         $chambre->save();
-        $message = "La chambre $chambre->nom a été attribuée avec succès";
+        $client = Client::select('id', 'nom', 'prenom')->find($attribution->client);
+        $message = "La chambre $chambre->nom a été attribuée avec succès au client $client->nom $client->prenom";
         return response()->json(['message' => $message]);
     }
 
@@ -61,7 +81,7 @@ class AttributionsController extends Controller
     public function update(int $id, Request $request)
     {
         $this->validate($request, Attribution::RULES);
-        $attribution = Attribution::with('chambreLinked')->find($id);
+        $attribution = Attribution::with('chambreLinked', 'clientLinked')->find($id);
         $attribution->entree = $request->entree;
         $attribution->sortie = $request->sortie;
         $attribution->accompagnants = $request->accompagnants;
@@ -69,8 +89,10 @@ class AttributionsController extends Controller
         $attribution->client = $request->client;
         $attribution->chambre = $request->chambre;
         $attribution->remise = $request->remise;
+        $chambre = Chambre::find($request->chambre);
+        $attribution->prix = $chambre->prix_vente;
         $attribution->save();
-        $message = "L'hébergement concernant la chambre " . $attribution->chambreLinked->nom . " a été modifié avec succès";
+        $message = "L'hébergement concernant la chambre " . $attribution->chambreLinked->nom . " pour le client " . $attribution->clientLinked->nom . " a été modifié avec succès";
         return response()->json(['message' => $message]);
     }
 
@@ -78,12 +100,15 @@ class AttributionsController extends Controller
     {
         $attribution = Attribution::find($id);
         $attribution->liberer();
-        $attribution->date_liberation = Carbon::now();
+        $today = Carbon::now();
+        $attribution->date_liberation = $today;
+        $attribution->sortie = $today;
         $attribution->save();
-        $chambre = Chambre::find($attribution->chambre);
+        $chambre = Chambre::select('id', 'nom')->find($attribution->chambre);
         $chambre->liberer();
         $chambre->save();
-        $message = 'la chambre ' . $chambre->nom . ' a été libérée.';
+        $client = Client::select('id', 'nom')->find($attribution->client);
+        $message = 'la chambre ' . $chambre->nom . ' du client ' . $client->nom . ' a été libérée.';
         return response()->json(['message' => $message]);
     }
 
@@ -93,6 +118,7 @@ class AttributionsController extends Controller
         $attribution->delete();
         $chambre = Chambre::find($attribution->chambre);
         $chambre->liberer();
+        $chambre->save();
         $message = "l'hébergement, chambre $chambre->nom a été supprimée.";
         return response()->json(['message' => $message]);
     }

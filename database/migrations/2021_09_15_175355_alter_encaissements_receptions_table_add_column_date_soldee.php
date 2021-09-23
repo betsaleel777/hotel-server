@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterAttributionsTableAddRemiseColumn extends Migration
+class AlterEncaissementsReceptionsTableAddColumnDateSoldee extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AlterAttributionsTableAddRemiseColumn extends Migration
      */
     public function up()
     {
-        Schema::table('attributions', function (Blueprint $table) {
-            $table->unsignedDecimal('remise',22,20)->nullable();
+        Schema::table('encaissements_receptions', function (Blueprint $table) {
+            $table->dateTime('date_soldee')->nullable();
         });
     }
 
@@ -25,7 +25,7 @@ class AlterAttributionsTableAddRemiseColumn extends Migration
      */
     public function down()
     {
-        Schema::table('attributions', function (Blueprint $table) {
+        Schema::table('encaissements_receptions', function (Blueprint $table) {
             //
         });
     }
