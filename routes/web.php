@@ -19,10 +19,10 @@ $router->get('/', function () use ($router) {
 
 $router->group(['middleware' => ['auth']], function ($router) {
     $router->post('logout', 'Auth\AuthController@logout');
+    $router->post('refresh', 'Auth\AuthController@refresh');
     $router->get('user', 'Auth\AuthController@profile');
 });
 $router->post('login', 'Auth\AuthController@login');
-$router->post('refresh', 'Auth\AuthController@refresh');
 
 $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
     $router->group(['prefix' => 'chambres'], function () use ($router) {
@@ -65,6 +65,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
         $router->post('new', 'Reception\AttributionsController@insert');
         $router->put('{id}', 'Reception\AttributionsController@update');
         $router->put('free/{id}', 'Reception\AttributionsController@liberer');
+        $router->put('event/{id}', 'Reception\AttributionsController@updateCalendar');
         $router->delete('{id}', 'Reception\AttributionsController@delete');
     });
 

@@ -17,7 +17,7 @@ class Versement extends Model
     ];
 
     const RULES = [
-        'montant' => 'required', 'monnaie' => 'required',
+        'montant' => 'required|numeric|min:5000', 'monnaie' => 'required',
     ];
 
     public function encaissementLinked()

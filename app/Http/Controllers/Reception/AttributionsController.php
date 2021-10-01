@@ -96,6 +96,16 @@ class AttributionsController extends Controller
         return response()->json(['message' => $message]);
     }
 
+    public function updateCalendar(int $id, Request $request)
+    {
+        $attribution = Attribution::with('clientLinked', 'chambreLinked')->find($id);
+        $attribution->entree = $request->entree;
+        $attribution->sortie = $request->sortie;
+        $attribution->save();
+        $message = "L'hébergement concernant la chambre " . $attribution->chambreLinked->nom . " pour le client " . $attribution->clientLinked->nom . " a été modifié avec succès";
+        return response()->json(['message' => $message]);
+    }
+
     public function liberer(int $id)
     {
         $attribution = Attribution::find($id);
