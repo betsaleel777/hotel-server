@@ -209,10 +209,11 @@ class DemandesController extends Controller
                 "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
                  INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
                  WHERE e.departement =$departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+                 SELECT p.pour_tournee,p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
                  ,IFNULL(t.contenance,0) as contenance FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie
                  INNER JOIN produits p ON p.id=ps.produit LEFT JOIN tournees t ON t.produit =ps.produit
-                 LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance"
+                 LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement
+                 GROUP BY p.pour_tournee,p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente,t.contenance"
             ));
             $tourneesVendus = DB::select(DB::Raw(
                 "with encaisse as (select c.nom,c.id,sum(ce.quantite) as nombre from cocktails_encaissements ce inner join cocktails c on c.id = ce.cocktail
@@ -238,6 +239,7 @@ class DemandesController extends Controller
                             $inventaire[] = [
                                 'produit' => $vendus->produit,
                                 'nom' => $sansTournee->nom,
+                                'buvable' => $sansTournee->pour_tournee,
                                 'code' => $sansTournee->code,
                                 'mesure' => $sansTournee->mesure,
                                 'disponible' => $valeurEntiere,
@@ -256,10 +258,10 @@ class DemandesController extends Controller
                 "WITH encaisse AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
                  INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
                  WHERE e.departement = $departement GROUP BY pe.produit,p.nom,p.code,p.mesure)
-                 SELECT p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
+                 SELECT p.pour_plat,p.id as produit,p.nom,p.code,p.mesure,SUM(ps.recues-IFNULL(encaisse.quantite,0)) AS disponible, s.departement,p.prix_vente
                  FROM produits_sorties ps INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
                  LEFT JOIN encaisse ON encaisse.produit = p.id WHERE s.departement=$departement
-                 GROUP BY p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
+                 GROUP BY p.pour_plat,p.id,p.nom,p.code,p.mesure,s.departement,p.prix_vente"
             ));
 
             $platsVendus = DB::select(DB::Raw(
@@ -279,6 +281,7 @@ class DemandesController extends Controller
                             $inventaire[] = [
                                 'produit' => $vendus->produit,
                                 'nom' => $vendus->nom,
+                                'preparable' => $sansPlats->pour_plat,
                                 'code' => $vendus->code,
                                 'mesure' => $vendus->mesure,
                                 'disponible' => $sansPlats->disponible - $vendus->quantite,

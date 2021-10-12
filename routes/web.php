@@ -186,10 +186,12 @@ $router->group(['prefix' => 'caisses'], function () use ($router) {
         $router->get('/', 'Caisse\EncaissementsController@getAll');
         $router->get('/{id}', 'Caisse\EncaissementsController@getOne');
         $router->get('/departement/{id}', 'Caisse\EncaissementsController@getByDepartement');
+        $router->get('/soldes/departement/{id}', 'Caisse\EncaissementsController@getSoldesByDepartement');
         $router->get('finance/{departement}', 'Caisse\EncaissementsController@pointFinancierStandard');
         $router->get('finance/{departement}/{debut}/{fin}', 'Caisse\EncaissementsController@pointFinancierIntervalleDate');
         $router->get('finance/{departement}/{jour}/', 'Caisse\EncaissementsController@pointFinancierJournalier');
         $router->post('new', 'Caisse\EncaissementsController@insert');
+        $router->post('versement', 'Caisse\EncaissementsController@encaisser');
         $router->put('{id}', 'Caisse\EncaissementsController@update');
         $router->delete('{id}', 'Caisse\EncaissementsController@delete');
     });
@@ -259,3 +261,4 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
         $router->delete('{id}', 'Parametre\PermissionsController@delete');
     });
 });
+// routes pour la gestion du restaurant externe ------------------------------------------------------------------------------------

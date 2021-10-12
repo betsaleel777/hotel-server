@@ -112,7 +112,9 @@ class AttributionsController extends Controller
         $attribution->liberer();
         $today = Carbon::now();
         $attribution->date_liberation = $today;
-        $attribution->sortie = $today;
+        if ($today->between($attribution->entree, $attribution->sortie)) {
+            $attribution->sortie = $today;
+        }
         $attribution->save();
         $chambre = Chambre::select('id', 'nom')->find($attribution->chambre);
         $chambre->liberer();

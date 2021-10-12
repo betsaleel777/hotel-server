@@ -3,7 +3,9 @@ namespace App\Http\Controllers\Caisse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Caisse\Encaissement;
+use App\Models\Caisse\Versement;
 use App\Models\Parametre\Departement;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,21 +24,30 @@ class EncaissementsController extends Controller
     public function getAll()
     {
         $encaissements = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked',
-            'produits', 'plats', 'cocktails', 'tournees')->get();
+            'versements.mobile', 'produits', 'plats', 'cocktails', 'tournees')->get();
         return response()->json(['encaissements' => $encaissements]);
     }
 
     public function getByDepartement(int $id)
     {
         $encaissements = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked',
-            'produits', 'plats', 'cocktails', 'tournees')->where('departement', $id)->get();
+            'versements.mobile', 'produits', 'plats', 'cocktails', 'tournees')
+            ->where('departement', $id)->unpayed()->get();
         return response()->json(['encaissements' => $encaissements]);
     }
 
+    public function getSoldesByDepartement(int $id)
+    {
+        $encaissements = Encaissement::doesntHave('attributionLinked')->with('versements.mobile', 'produits', 'plats', 'cocktails', 'tournees')
+            ->where('departement', $id)->payed()->get();
+        return response()->json(['encaissements' => $encaissements]);
+    }
+
+    //création de facture
     public function insert(Request $request)
     {
         $encaissement = new Encaissement($request->all());
-        empty($request->attribution) ? $encaissement->payer() : $encaissement->impayer();
+        $encaissement->impayer();
         $encaissement->save();
         foreach ($request->boissons as $article) {
             $encaissement->produits()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
@@ -56,26 +67,32 @@ class EncaissementsController extends Controller
         }
         $message = "La caisse a enregistrée avec succès la consommation, code: $encaissement->nom";
         $encaissement = Encaissement::with('plats', 'produits', 'cocktails', 'tournees')->find($encaissement->id);
+        return response()->json(['message' => $message]);
+    }
+
+    public function encaisser(Request $request)
+    {
+        $this->validate($request, Versement::RULES);
+        $encaissement = Encaissement::with('attributionLinked.clientLinked')->find($request->encaissement);
+        if ((int) $request->dejaVerse < (int) $request->montantApayer) {
+            $encaissement->impayer();
+        } else {
+            $encaissement->payer();
+            $encaissement->date_soldee = Carbon::now();
+        }
+        $client = $encaissement->attribution_linked ? $encaissement->attribution_linked->client_linked->nom+' '+$encaissement->attribution_linked->client_linked->prenom : 'Anonyme';
+        $encaissement->save();
+        $versement = new Versement($request->all());
+        $versement->save();
         return response()->json([
-            'message' => $message,
-            'encaissement' => [
-                'id' => $encaissement->id,
-                'nom' => $encaissement->nom,
-                'status' => $encaissement->status,
-                'created_at' => $encaissement->created_at,
-                'code' => $encaissement->code,
-                'produits' => $encaissement->produits,
-                'plats' => $encaissement->plats,
-                'cocktails' => $encaissement->cocktails,
-                'tournees' => $encaissement->tournees,
-                'zone' => $encaissement->zone,
-            ],
+            'message' => "Le paiement de la facture $encaissement->code du client $client a été enregistré avec succès.",
         ]);
     }
 
     public function getOne(int $id)
     {
-        $encaissement = Encaissement::with('attributionLinked.clientLinked', 'produits', 'plats', 'cocktails', 'tournees')->find($id);
+        $encaissement = Encaissement::with('attributionLinked.chambreLinked', 'attributionLinked.clientLinked',
+            'versements.mobile', 'produits', 'plats', 'cocktails', 'tournees')->find($id);
         return response()->json(['encaissement' => $encaissement]);
     }
 
@@ -104,21 +121,7 @@ class EncaissementsController extends Controller
         $encaissement->tournees()->sync($toSync);
         $message = "L'encaissement $encaissement->code a été completé avec succès.";
         $encaissement = Encaissement::with('plats', 'produits', 'cocktails', 'tournees')->find($encaissement->id);
-        return response()->json([
-            'message' => $message,
-            'encaissement' => [
-                'id' => $encaissement->id,
-                'nom' => $encaissement->nom,
-                'status' => $encaissement->status,
-                'created_at' => $encaissement->created_at,
-                'code' => $encaissement->code,
-                'produits' => $encaissement->produits,
-                'plats' => $encaissement->plats,
-                'cocktails' => $encaissement->cocktails,
-                'tournees' => $encaissement->tournees,
-            ],
-        ]);
-
+        return response()->json(['message' => $message]);
     }
 
     public function delete()

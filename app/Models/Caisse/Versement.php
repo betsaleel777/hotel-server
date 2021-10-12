@@ -19,7 +19,7 @@ class Versement extends Model
     protected $table = 'versements_departements';
 
     const RULES = [
-        'montant' => 'required', 'monnaie' => 'required',
+        'montant' => 'required|numeric|min:100',
     ];
 
     public function encaissementLinked()

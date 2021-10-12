@@ -28,9 +28,9 @@ class Encaissement extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'status', 'attribution', 'departement', 'zone','date_soldee'
+        'code', 'status', 'attribution', 'departement', 'zone', 'date_soldee',
     ];
-    protected $dates = ['date_soldee','created_at'];
+    protected $dates = ['date_soldee', 'created_at'];
     const PAYER = 'payé';
     const IMPAYER = 'impayé';
 
@@ -49,6 +49,16 @@ class Encaissement extends Model
     public function impayer()
     {
         $this->attributes['status'] = self::IMPAYER;
+    }
+
+    public function scopeUnpayed($query)
+    {
+        return $query->where('status', self::IMPAYER);
+    }
+
+    public function scopePayed($query)
+    {
+        return $query->where('status', self::PAYER);
     }
 
     public function attributionLinked()
@@ -74,5 +84,10 @@ class Encaissement extends Model
     public function tournees()
     {
         return $this->belongsToMany(Tournee::class, 'tournees_encaissements', 'encaissement', 'tournee')->withPivot('quantite', 'prix_vente')->withTimestamps();
+    }
+
+    public function versements()
+    {
+        return $this->hasMany(Versement::class, 'encaissement');
     }
 }

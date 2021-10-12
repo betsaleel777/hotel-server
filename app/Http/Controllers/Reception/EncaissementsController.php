@@ -2,7 +2,10 @@
 namespace App\Http\Controllers\Reception;
 
 use App\Http\Controllers\Controller;
+use App\Models\Caisse\Encaissement as CaisseEncaissement;
+use App\Models\Reception\Attribution;
 use App\Models\Reception\Encaissement;
+use App\Models\Reception\Reservation;
 use App\Models\Reception\Versement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -37,6 +40,14 @@ class EncaissementsController extends Controller
         } else {
             $encaissement->solder();
             $encaissement->date_soldee = Carbon::now();
+            $attribution = Attribution::with('consommation')->find($encaissement->attribution);
+            $consommation = $attribution->consommation ? CaisseEncaissement::find($attribution->consommation->id) : null;
+            if (!empty($consommation)) {
+                $consommation->date_soldee = Carbon::now();
+                $consommation->payer();
+                $consommation->save();
+            }
+
         }
         $encaissement->save();
     }
