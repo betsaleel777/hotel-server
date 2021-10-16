@@ -11,9 +11,7 @@ class Piece extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'nature', 'numero_piece', 'lieu_piece', 'delivre_le', 'expire_le', 'maker', 'entree_pays', 'client',
-    ];
+    protected $guarded = [];
 
     const RULES = [
         'nature' => 'required',

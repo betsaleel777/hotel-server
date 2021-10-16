@@ -40,7 +40,7 @@ class EncaissementsController extends Controller
         } else {
             $encaissement->solder();
             $encaissement->date_soldee = Carbon::now();
-            $attribution = Attribution::with('consommation')->find($encaissement->attribution);
+            $attribution = Attribution::with('consommations')->find($encaissement->attribution);
             $consommation = $attribution->consommation ? CaisseEncaissement::find($attribution->consommation->id) : null;
             if (!empty($consommation)) {
                 $consommation->date_soldee = Carbon::now();
@@ -112,8 +112,8 @@ class EncaissementsController extends Controller
     {
         $encaissements = Encaissement::with([
             'attributionLinked.clientLinked', 'attributionLinked.chambreLinked',
-            'attributionLinked.consommation.produits', 'attributionLinked.consommation.plats', 'attributionLinked.consommation.cocktails',
-            'attributionLinked.consommation.tournees', 'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
+            'attributionLinked.consommations.produits', 'attributionLinked.consommations.plats', 'attributionLinked.consommations.cocktails',
+            'attributionLinked.consommations.tournees', 'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
             'anterieur', 'versements.mobile'])->soldes()->get();
         return response()->json(['encaissements' => $encaissements]);
     }
@@ -122,8 +122,8 @@ class EncaissementsController extends Controller
     {
         $encaissements = Encaissement::with([
             'attributionLinked.clientLinked', 'attributionLinked.chambreLinked',
-            'attributionLinked.consommation.produits', 'attributionLinked.consommation.plats', 'attributionLinked.consommation.cocktails',
-            'attributionLinked.consommation.tournees', 'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
+            'attributionLinked.consommations.produits', 'attributionLinked.consommations.plats', 'attributionLinked.consommations.cocktails',
+            'attributionLinked.consommations.tournees', 'reservationLinked.clientLinked', 'reservationLinked.chambreLinked',
             'anterieur', 'versements.mobile'])->nonSoldes()->get();
         return response()->json(['encaissements' => $encaissements]);
     }

@@ -13,9 +13,7 @@ class MobileMoney extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'nom',
-    ];
+    protected $guarded = [];
 
     protected $table = 'mobile_money';
 

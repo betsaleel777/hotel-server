@@ -11,9 +11,7 @@ class PrixCocktail extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'cocktail', 'montant',
-    ];
+    protected $guarded = [];
 
     protected $table = 'prix_cocktails';
 

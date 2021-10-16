@@ -11,9 +11,7 @@ class Categorie extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'nom',
-    ];
+    protected $guarded = [];
 
     protected $table = 'categories_plats';
 

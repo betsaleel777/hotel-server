@@ -11,10 +11,7 @@ class Client extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'code', 'nom', 'prenom', 'jeune_fille', 'naissance', 'contact', 'pere',
-        'mere', 'departement', 'profession', 'pays', 'domicile', 'email', 'status',
-    ];
+    protected $guarded = [];
 
     const RULES = [
         'nom' => 'required',

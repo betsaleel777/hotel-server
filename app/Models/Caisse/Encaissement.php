@@ -27,9 +27,7 @@ class Encaissement extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'code', 'status', 'attribution', 'departement', 'zone', 'date_soldee',
-    ];
+    protected $guarded = [];
     protected $dates = ['date_soldee', 'created_at'];
     const PAYER = 'payé';
     const IMPAYER = 'impayé';

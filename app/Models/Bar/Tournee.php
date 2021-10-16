@@ -12,9 +12,7 @@ class Tournee extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'titre', 'produit', 'nombre', 'contenance', 'code', 'prix_vente',
-    ];
+    protected $guarded = [];
 
     const RULES = [
         'titre' => 'nullable|unique:tournees,titre',

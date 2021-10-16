@@ -12,9 +12,7 @@ class Produit extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'code', 'nom', 'image', 'mode', 'type', 'mesure', 'description', 'etagere', 'categorie', 'prix_vente', 'pour_plat', 'pour_tournee',
-    ];
+    protected $guarded = [];
 
     const RULES = [
         'nom' => 'required|unique:produits,nom',

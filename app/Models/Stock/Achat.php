@@ -11,9 +11,7 @@ class Achat extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'code', 'prix_achat', 'quantite', 'ingredient',
-    ];
+    protected $guarded = [];
     protected $table = 'approvisionements';
 
     const RULES = [

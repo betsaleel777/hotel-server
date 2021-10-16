@@ -262,3 +262,67 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
     });
 });
 // routes pour la gestion du restaurant externe ------------------------------------------------------------------------------------
+$router->group(['prefix' => 'externe'], function ($router) {
+    $router->group(['prefix' => 'parametre'], function ($router) {
+        $router->group(['prefix' => 'restaurants'], function ($router) {
+            $router->get('/', 'Externe\Parametre\RestaurantsController@getAll');
+            $router->get('{id}', 'Externe\Parametre\RestaurantsController@getOne');
+            $router->post('new', 'Externe\Parametre\RestaurantsController@insert');
+            $router->put('{id}', 'Externe\Parametre\RestaurantsController@update');
+            $router->delete('{id}', 'Externe\Parametre\RestaurantsController@delete');
+        });
+    });
+    $router->group(['prefix' => 'stock'], function ($router) {
+        $router->group(['prefix' => 'articles'], function ($router) {
+            $router->get('/', 'Externe\Stock\Article\ArticlesController@getAll');
+            $router->get('{id}', 'Externe\Stock\Article\ArticlesController@getOne');
+            $router->post('new', 'Externe\Stock\Article\ArticlesController@insert');
+            $router->put('{id}', 'Externe\Stock\Article\ArticlesController@update');
+            $router->delete('{id}', 'Externe\Stock\Article\ArticlesController@delete');
+        });
+        $router->group(['prefix' => 'plats'], function ($router) {
+            $router->get('/', 'Externe\Stock\Plat\PlatsController@getAll');
+            $router->get('{id}', 'Externe\Stock\Plat\PlatsController@getOne');
+            $router->post('new', 'Externe\Stock\Plat\PlatsController@insert');
+            $router->put('{id}', 'Externe\Stock\Plat\PlatsController@update');
+            $router->delete('{id}', 'Externe\Stock\Plat\PlatsController@delete');
+        });
+        $router->group(['prefix' => 'cocktails'], function ($router) {
+            $router->get('/', 'Externe\Stock\Cocktail\CocktailsController@getAll');
+            $router->get('{id}', 'Externe\Stock\Cocktail\CocktailsController@getOne');
+            $router->post('new', 'Externe\Stock\Cocktail\CocktailsController@insert');
+            $router->put('{id}', 'Externe\Stock\Cocktail\CocktailsController@update');
+            $router->delete('{id}', 'Externe\Stock\Cocktail\CocktailsController@delete');
+        });
+        $router->group(['prefix' => 'tournees'], function ($router) {
+            $router->get('/', 'Externe\Stock\Tournee\TourneesController@getAll');
+            $router->get('{id}', 'Externe\Stock\Tournee\TourneesController@getOne');
+            $router->post('new', 'Externe\Stock\Tournee\TourneesController@insert');
+            $router->put('{id}', 'Externe\Stock\Tournee\TourneesController@update');
+            $router->delete('{id}', 'Externe\Stock\Tournee\TourneesController@delete');
+        });
+        $router->group(['prefix' => 'depenses'], function ($router) {
+            $router->get('/', 'Externe\Stock\DepensesController@getAll');
+            $router->get('{id}', 'Externe\Stock\DepensesController@getOne');
+            $router->post('new', 'Externe\Stock\DepensesController@insert');
+            $router->put('{id}', 'Externe\Stock\DepensesController@update');
+            $router->delete('{id}', 'Externe\Stock\DepensesController@delete');
+        });
+    });
+    $router->group(['prefix' => 'caisse'], function ($router) {
+        $router->group(['prefix' => 'factures'], function ($router) {
+            $router->get('/', 'Externe\Stock\FacturesController@getAll');
+            $router->get('{id}', 'Externe\Stock\FacturesController@getOne');
+            $router->post('new', 'Externe\Stock\FacturesController@insert');
+            $router->put('{id}', 'Externe\Stock\FacturesController@update');
+            $router->delete('{id}', 'Externe\Stock\FacturesController@delete');
+        });
+        $router->group(['prefix' => 'paiements'], function ($router) {
+            $router->get('/', 'Externe\Stock\PaiementsController@getAll');
+            $router->get('{id}', 'Externe\Stock\PaiementsController@getOne');
+            $router->post('new', 'Externe\Stock\PaiementsController@insert');
+            $router->put('{id}', 'Externe\Stock\PaiementsController@update');
+            $router->delete('{id}', 'Externe\Stock\PaiementsController@delete');
+        });
+    });
+});

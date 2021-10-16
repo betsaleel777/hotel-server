@@ -13,9 +13,7 @@ class Attribution extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'reservation', 'status', 'remise', 'prix',
-    ];
+    protected $guarded = [];
     protected $dates = ['entree', 'sortie', 'date_liberation'];
     const RULES = [
         'accompagnants' => 'nullable|numeric',
@@ -74,9 +72,9 @@ class Attribution extends Model
         return $this->belongsTo(Reservation::class, 'reservation');
     }
 
-    public function consommation()
+    public function consommations()
     {
-        return $this->hasOne(EncaissementCaisse::class, 'attribution');
+        return $this->hasMany(EncaissementCaisse::class, 'attribution');
     }
 
     public function encaissement()

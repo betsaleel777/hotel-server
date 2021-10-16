@@ -23,9 +23,7 @@ class Sortie extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'code', 'demande', 'titre', 'departement',
-    ];
+    protected $guarded = [];
     const RULES = [
         'titre' => 'required|max:150|unique:sorties,titre',
         'departement' => 'required',
