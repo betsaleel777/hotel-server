@@ -59,6 +59,14 @@ class TourneesController extends Controller
         return response()->json(['message' => $message]);
     }
 
+    public function restorer(int $id)
+    {
+        $article = Tournee::withTrashed()->find($id);
+        $article->restore();
+        $message = "la tournée $article->nom a été restauré avec succès.";
+        return response()->json(['message' => $message]);
+    }
+
     public function trash(int $id)
     {
         $tournee = Tournee::find($id);

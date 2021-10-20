@@ -4,14 +4,11 @@ namespace App\Models\Externe\Stock\Tournee;
 
 use App\Models\Externe\Stock\Article\Article;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tournee extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    use SoftDeletes;
     protected $guarded = [];
     protected $table = 'tournees_externes';
     const RULES = [

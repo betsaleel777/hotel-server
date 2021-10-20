@@ -63,7 +63,7 @@ class ArticlesController extends Controller
     {
         $article = Article::withTrashed()->find($id);
         $article->restore();
-        $message = "l'article $article->nom a été restoré avec succès.";
+        $message = "l'article $article->nom a été restauré avec succès.";
         return response()->json(['message' => $message]);
     }
 
