@@ -62,24 +62,7 @@ class ProduitsController extends Controller
 
         $message = "le produit $produit->nom a  été crée avec succès.";
         $produit = Produit::with('categorieLinked')->find($produit->id);
-        return response()->json([
-            'message' => $message,
-            'produit' => [
-                'id' => $produit->id,
-                'code' => $produit->code,
-                'nom' => $produit->nom,
-                'mesure' => $produit->mesure,
-                'image' => [],
-                'mode' => $produit->mode,
-                'type' => $produit->type,
-                'montant' => $produit->prix_vente,
-                'pour_plat' => $produit->pour_plat,
-                'pour_tournee' => $produit->pour_tournee,
-                'description' => $produit->description,
-                'etagere' => $produit->etagere,
-                'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],
-            ],
-        ]);
+        return response()->json(['message' => $message]);
     }
 
     public function getOne(int $id)
@@ -111,24 +94,7 @@ class ProduitsController extends Controller
 
         $message = "le produit a été modifié avec succès.";
         $produit = Produit::with(['categorieLinked'])->find($produit->id);
-        return response()->json([
-            'message' => $message,
-            'produit' => [
-                'id' => $produit->id,
-                'code' => $produit->code,
-                'nom' => $produit->nom,
-                'mesure' => $produit->mesure,
-                'image' => [],
-                'mode' => $produit->mode,
-                'type' => $produit->type,
-                'montant' => $produit->prix_vente,
-                'pour_plat' => $produit->pour_plat,
-                'pour_tournee' => $produit->pour_tournee,
-                'description' => $produit->description,
-                'etagere' => $produit->etagere,
-                'categorie' => ['id' => $produit->categorieLinked->id, 'nom' => $produit->categorieLinked->nom],
-            ],
-        ]);
+        return response()->json(['message' => $message]);
     }
 
     public function delete(int $id)

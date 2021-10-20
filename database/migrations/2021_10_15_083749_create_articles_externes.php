@@ -17,11 +17,11 @@ class CreateArticlesExternes extends Migration
             $table->id();
             $table->string('code', 20)->unique();
             $table->string('nom', 200)->unique();
-            $table->string('image', 255);
-            $table->unsignedDecimal('contenance', 5, 3);
-            $table->unsignedInteger('prix_vente');
-            $table->string('mesure', 10);
-            $table->string('etagere', 50);
+            $table->string('image', 255)->nullable();
+            $table->unsignedDecimal('contenance', 5, 3)->nullable();
+            $table->unsignedInteger('prix_vente')->nullable();
+            $table->string('mesure', 10)->nullable();
+            $table->string('etagere', 50)->nullable();
             $table->boolean('pour_plat')->default(false);
             $table->boolean('pour_tournee')->default(false);
             $table->timestamps();
