@@ -35,7 +35,8 @@ class TourneesController extends Controller
 
     public function insert(Request $request)
     {
-        $this->validate($request, Tournee::RULES);
+        $rules = array_merge(Tournee::RULES, Prix::RULES);
+        $this->validate($request, $rules);
         $tournee = new Tournee($request->all());
         $tournee->genererCode();
         $tournee->save();
@@ -47,14 +48,15 @@ class TourneesController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $this->validate($request, Tournee::regles($id));
+        $rules = array_merge(Tournee::regles($id), Prix::RULES);
+        $this->validate($request, $rules);
         $tournee = Tournee::find($id);
         $tournee->fill($request->all());
         if ($tournee->isDirty('prix_vente')) {
             $prix = new Prix(['montant' => $request->prix_vente, 'tournee_id' => $id, 'restaurant_id' => $request->restaurant_id]);
             $prix->save();
         }
-        $tournee->update($request->all());
+        $tournee->save();
         $message = "la tournée $tournee->nom a été modifié avec succès.";
         return response()->json(['message' => $message]);
     }

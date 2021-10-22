@@ -301,6 +301,7 @@ $router->group(['prefix' => 'externe'], function ($router) {
             });
             $router->group(['prefix' => 'cocktails'], function ($router) {
                 $router->get('/', 'Externe\Stock\Cocktail\CategoriesController@getAll');
+                $router->get('restaurant/{restaurant}', 'Externe\Stock\Cocktail\CategoriesController@getFromRestau');
                 $router->get('{id}', 'Externe\Stock\Cocktail\CategoriesController@getOne');
                 $router->post('new', 'Externe\Stock\Cocktail\CategoriesController@insert');
                 $router->put('{id}', 'Externe\Stock\Cocktail\CategoriesController@update');
@@ -336,9 +337,12 @@ $router->group(['prefix' => 'externe'], function ($router) {
         $router->group(['prefix' => 'cocktails'], function ($router) {
             $router->get('/', 'Externe\Stock\Cocktail\CocktailsController@getAll');
             $router->get('restaurant/{restaurant}', 'Externe\Stock\Cocktail\CocktailsController@getFromRestau');
+            $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Cocktail\CocktailsController@getTrashedFromRestau');
             $router->get('{id}', 'Externe\Stock\Cocktail\CocktailsController@getOne');
+            $router->get('restorer/{id}', 'Externe\Stock\Cocktail\CocktailsController@restorer');
             $router->post('new', 'Externe\Stock\Cocktail\CocktailsController@insert');
             $router->put('{id}', 'Externe\Stock\Cocktail\CocktailsController@update');
+            $router->delete('archiver/{id}', 'Externe\Stock\Cocktail\CocktailsController@trash');
             $router->delete('{id}', 'Externe\Stock\Cocktail\CocktailsController@delete');
         });
         $router->group(['prefix' => 'tournees'], function ($router) {

@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Prix extends Model
 {
-    protected $table = 'prix_tournees_externes';
     protected $guarded = [];
+    protected $table = 'prix_tournees_externes';
     const RULES = [
-        'montant' => 'required|numeric',
+        'prix_vente' => 'required|numeric',
     ];
 
     public function tournee()

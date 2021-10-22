@@ -54,7 +54,7 @@ class ArticlesController extends Controller
             $prix = new Prix(['montant' => $request->prix_vente, 'article_id' => $id, 'restaurant_id' => $request->restaurant_id]);
             $prix->save();
         }
-        $article->update($request->all());
+        $article->save();
         $message = "l'article $article->nom a été modifié avec succès.";
         return response()->json(['message' => $message]);
     }

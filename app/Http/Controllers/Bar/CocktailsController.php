@@ -44,20 +44,7 @@ class CocktailsController extends Controller
             $cocktail->tournees()->attach($ingredient['id'], ['quantite' => $ingredient['quantite']]);
         }
         $message = "Le cocktail $cocktail->nom a été crée avec succès.";
-        $cocktail = Cocktail::with(['prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }, 'tournees'])->find($cocktail->id);
-        return response()->json([
-            'message' => $message,
-            'cocktail' => [
-                'id' => $cocktail->id,
-                'code' => $cocktail->code,
-                'nom' => $cocktail->nom,
-                'tournees' => $cocktail->tournees,
-                'description' => $cocktail->description,
-                'montant' => $cocktail->prixList[0]->montant,
-            ],
-        ]);
+        return response()->json(['message' => $message]);
 
     }
 
@@ -88,20 +75,7 @@ class CocktailsController extends Controller
         }
         $cocktail->tournees()->sync($toSync);
         $message = "Le cocktail $cocktail->nom a été modifié avec succès.";
-        $cocktail = Cocktail::with(['prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }, 'tournees'])->find($cocktail->id);
-        return response()->json([
-            'message' => $message,
-            'cocktail' => [
-                'id' => $cocktail->id,
-                'code' => $cocktail->code,
-                'nom' => $cocktail->nom,
-                'tournees' => $cocktail->tournees,
-                'description' => $cocktail->description,
-                'montant' => $cocktail->prixList[0]->montant,
-            ],
-        ]);
+        return response()->json(['message' => $message]);
     }
 
     public function delete(int $id)
@@ -109,9 +83,6 @@ class CocktailsController extends Controller
         $cocktail = Cocktail::find($id);
         $cocktail->delete();
         $message = "Le cocktail $cocktail->nom, nommé $ a été supprimée avec succès.";
-        return response()->json([
-            'message' => $message,
-            'cocktail' => ['code' => $cocktail->code, 'id' => $cocktail->id],
-        ]);
+        return response()->json(['message' => $message]);
     }
 }

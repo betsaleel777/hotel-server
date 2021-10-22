@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Prix extends Model
 {
+    protected $guarded = [];
     protected $table = 'prix_cocktails_externes';
-
     const RULES = [
-        'montant' => 'required|numeric',
+        'prix_vente' => 'required|numeric',
     ];
 
     public function cocktail()

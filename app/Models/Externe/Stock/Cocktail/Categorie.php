@@ -9,16 +9,16 @@ class Categorie extends Model
 {
     use SoftDeletes;
     protected $guarded = [];
-    protected $table = 'categories_externes_cocktails';
+    protected $table = 'categories_cocktails_externes';
 
     const RULES = [
-        'nom' => 'required|unique:categories_externes_cocktails,nom',
+        'nom' => 'required|unique:categories_cocktails_externes,nom',
     ];
 
     public static function regles(int $id)
     {
         return [
-            'nom' => 'required|unique:categories_externes_cocktails,nom,' . $id,
+            'nom' => 'required|unique:categories_cocktails_externes,nom,' . $id,
         ];
     }
 
