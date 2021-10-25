@@ -262,6 +262,7 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
     });
 });
 // routes pour la gestion du restaurant externe ------------------------------------------------------------------------------------
+
 $router->group(['prefix' => 'externe'], function ($router) {
     $router->group(['prefix' => 'parametre'], function ($router) {
         $router->group(['prefix' => 'restaurants'], function ($router) {
@@ -315,8 +316,9 @@ $router->group(['prefix' => 'externe'], function ($router) {
             $router->get('/', 'Externe\Stock\Article\ArticlesController@getAll');
             $router->get('restaurant/{restaurant}', 'Externe\Stock\Article\ArticlesController@getFromRestau');
             $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Article\ArticlesController@getTrashedFromRestau');
-            $router->get('tournee', 'Externe\Stock\Article\ArticlesController@getArticlesTournee');
-            $router->get('plat', 'Externe\Stock\Article\ArticlesController@getArticlesPlat');
+            $router->get('tournee/{restaurant}', 'Externe\Stock\Article\ArticlesController@getArticlesTourneeFromRestau');
+            $router->get('plat/{restaurant}', 'Externe\Stock\Article\ArticlesController@getArticlesPlatFromRestau');
+            $router->get('inventory/{restaurant}', 'Externe\Stock\Article\ArticlesController@inventaireFromRestau');
             $router->get('{id}', 'Externe\Stock\Article\ArticlesController@getOne');
             $router->get('restorer/{id}', 'Externe\Stock\Article\ArticlesController@restorer');
             $router->post('new', 'Externe\Stock\Article\ArticlesController@insert');
@@ -331,37 +333,43 @@ $router->group(['prefix' => 'externe'], function ($router) {
             $router->get('{id}', 'Externe\Stock\Plat\PlatsController@getOne');
             $router->post('new', 'Externe\Stock\Plat\PlatsController@insert');
             $router->put('{id}', 'Externe\Stock\Plat\PlatsController@update');
-            $router->delete('archiver/{id}', 'Externe\Stock\Plat\PlatsController@trash');
             $router->delete('{id}', 'Externe\Stock\Plat\PlatsController@delete');
+            $router->delete('archiver/{id}', 'Externe\Stock\Plat\PlatsController@trash');
         });
         $router->group(['prefix' => 'cocktails'], function ($router) {
             $router->get('/', 'Externe\Stock\Cocktail\CocktailsController@getAll');
             $router->get('restaurant/{restaurant}', 'Externe\Stock\Cocktail\CocktailsController@getFromRestau');
             $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Cocktail\CocktailsController@getTrashedFromRestau');
-            $router->get('{id}', 'Externe\Stock\Cocktail\CocktailsController@getOne');
             $router->get('restorer/{id}', 'Externe\Stock\Cocktail\CocktailsController@restorer');
+            $router->get('{id}', 'Externe\Stock\Cocktail\CocktailsController@getOne');
             $router->post('new', 'Externe\Stock\Cocktail\CocktailsController@insert');
             $router->put('{id}', 'Externe\Stock\Cocktail\CocktailsController@update');
-            $router->delete('archiver/{id}', 'Externe\Stock\Cocktail\CocktailsController@trash');
             $router->delete('{id}', 'Externe\Stock\Cocktail\CocktailsController@delete');
+            $router->delete('archiver/{id}', 'Externe\Stock\Cocktail\CocktailsController@trash');
         });
         $router->group(['prefix' => 'tournees'], function ($router) {
             $router->get('/', 'Externe\Stock\Tournee\TourneesController@getAll');
             $router->get('restaurant/{restaurant}', 'Externe\Stock\Tournee\TourneesController@getFromRestau');
             $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Tournee\TourneesController@getTrashedFromRestau');
-            $router->get('{id}', 'Externe\Stock\Tournee\TourneesController@getOne');
             $router->get('restorer/{id}', 'Externe\Stock\Tournee\TourneesController@restorer');
+            $router->get('{id}', 'Externe\Stock\Tournee\TourneesController@getOne');
             $router->post('new', 'Externe\Stock\Tournee\TourneesController@insert');
             $router->put('{id}', 'Externe\Stock\Tournee\TourneesController@update');
-            $router->delete('archiver/{id}', 'Externe\Stock\Tournee\TourneesController@trash');
             $router->delete('{id}', 'Externe\Stock\Tournee\TourneesController@delete');
+            $router->delete('archiver/{id}', 'Externe\Stock\Tournee\TourneesController@trash');
         });
         $router->group(['prefix' => 'depenses'], function ($router) {
-            $router->get('/', 'Externe\Stock\DepensesController@getAll');
-            $router->get('{id}', 'Externe\Stock\DepensesController@getOne');
-            $router->post('new', 'Externe\Stock\DepensesController@insert');
-            $router->put('{id}', 'Externe\Stock\DepensesController@update');
-            $router->delete('{id}', 'Externe\Stock\DepensesController@delete');
+            $router->get('/', 'Externe\Stock\Depense\DepensesController@getAll');
+            $router->get('restaurant/{restaurant}', 'Externe\Stock\Depense\DepensesController@getFromRestau');
+            $router->get('restaurant/{restaurant}/date/{date}', 'Externe\Stock\Depense\DepensesController@getFromRestauByDate');
+            $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Depense\DepensesController@getTrashedFromRestau');
+            $router->get('restaurant/trashed/{restaurant}/date/{date}', 'Externe\Stock\Depense\DepensesController@getTrashedFromRestauByDate');
+            $router->get('restorer/{id}', 'Externe\Stock\Depense\DepensesController@restorer');
+            $router->get('{id}', 'Externe\Stock\Depense\DepensesController@getOne');
+            $router->post('new', 'Externe\Stock\Depense\DepensesController@insert');
+            $router->put('{id}', 'Externe\Stock\Depense\DepensesController@update');
+            $router->delete('{id}', 'Externe\Stock\Depense\DepensesController@delete');
+            $router->delete('archiver/{id}', 'Externe\Stock\Depense\DepensesController@trash');
         });
     });
     $router->group(['prefix' => 'caisse'], function ($router) {

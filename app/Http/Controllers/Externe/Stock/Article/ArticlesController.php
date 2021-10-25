@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Externe\Stock\Article;
 use App\Http\Controllers\Controller;
 use App\Models\Externe\Stock\Article\Article;
 use App\Models\Externe\Stock\Article\Prix;
+use App\Models\Externe\Stock\Depense\Depense;
 use Illuminate\Http\Request;
 
 class ArticlesController extends Controller
@@ -83,15 +84,21 @@ class ArticlesController extends Controller
         return response()->json(['message' => $message]);
     }
 
-    public function getArticlesTournee()
+    public function getArticlesTourneeFromRestau(int $restaurant)
     {
-        $articles = Article::with('categorie')->tournable()->get();
+        $articles = Article::with('categorie')->where('restaurant_id', $restaurant)->tournable()->get();
         return response()->json(['articles' => $articles]);
     }
 
-    public function getArticlesPlat()
+    public function getArticlesPlatFromRestau(int $restaurant)
     {
-        $articles = Article::with('categorie')->preparable()->get();
+        $articles = Article::with('categorie')->where('restaurant_id', $restaurant)->preparable()->get();
         return response()->json(['articles' => $articles]);
+    }
+
+    public function inventory(int $restaurant)
+    {
+        $articleAchetes = Depense::with('articles')->where('restaurant_id', $restaurant)->get();
+
     }
 }
