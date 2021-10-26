@@ -331,6 +331,7 @@ $router->group(['prefix' => 'externe'], function ($router) {
             $router->get('restaurant/{restaurant}', 'Externe\Stock\Plat\PlatsController@getFromRestau');
             $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Plat\PlatsController@getTrashedFromRestau');
             $router->get('{id}', 'Externe\Stock\Plat\PlatsController@getOne');
+            $router->get('restorer/{id}', 'Externe\Stock\Plat\PlatsController@restorer');
             $router->post('new', 'Externe\Stock\Plat\PlatsController@insert');
             $router->put('{id}', 'Externe\Stock\Plat\PlatsController@update');
             $router->delete('{id}', 'Externe\Stock\Plat\PlatsController@delete');
@@ -374,11 +375,12 @@ $router->group(['prefix' => 'externe'], function ($router) {
     });
     $router->group(['prefix' => 'caisse'], function ($router) {
         $router->group(['prefix' => 'factures'], function ($router) {
-            $router->get('/', 'Externe\Stock\FacturesController@getAll');
-            $router->get('{id}', 'Externe\Stock\FacturesController@getOne');
-            $router->post('new', 'Externe\Stock\FacturesController@insert');
-            $router->put('{id}', 'Externe\Stock\FacturesController@update');
-            $router->delete('{id}', 'Externe\Stock\FacturesController@delete');
+            $router->get('/', 'Externe\Caisse\FacturesController@getAll');
+            $router->get('restaurant/{restaurant}', 'Externe\Caisse\FacturesController@getFromRestau');
+            $router->get('{id}', 'Externe\Caisse\FacturesController@getOne');
+            $router->post('new', 'Externe\Caisse\FacturesController@insert');
+            $router->put('{id}', 'Externe\Caisse\FacturesController@update');
+            $router->delete('{id}', 'Externe\Caisse\FacturesController@delete');
         });
         $router->group(['prefix' => 'paiements'], function ($router) {
             $router->get('/', 'Externe\Stock\PaiementsController@getAll');
