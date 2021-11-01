@@ -19,7 +19,7 @@ class CreatePaiementsExternesTable extends Migration
             $table->unsignedInteger('monnaie')->default(0);
             $table->boolean('espece')->default(false);
             $table->string('cheque', 70)->nullable();
-            $table->foreignId('mobile_id')->constrained('mobiles_externes')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('mobile_id')->nullable()->constrained('mobiles_externes')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('restaurant_id')->constrained('restaurants_externes')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('facture_id')->constrained('factures_externes')->onDelete('cascade')->onUpdate('cascade');
             $table->softDeletes();

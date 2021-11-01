@@ -11,7 +11,9 @@ class Chambre extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'nom', 'categorie', 'status', 'code', 'prix_vente',
+    ];
     protected $dates = ['created_at'];
 
     const RULES = [

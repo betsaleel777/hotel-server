@@ -12,7 +12,9 @@ class Plat extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'code', 'image', 'nom', 'categorie', 'description',
+    ];
 
     const RULES = [
         'image' => 'nullable|max:10240',

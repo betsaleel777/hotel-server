@@ -11,7 +11,9 @@ class PrixChambre extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'montant', 'chambre',
+    ];
 
     const RULES = [
         'montant' => 'required|numeric',

@@ -11,8 +11,9 @@ class Categorie extends Model
      *
      * @var array
      */
-    protected $guarded = [];
-
+    protected $fillable = [
+        'nom',
+    ];
     protected $table = 'categories_plats';
 
     const RULES = [

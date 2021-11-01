@@ -18,7 +18,9 @@ class Encaissement extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'code', 'status', 'attribution', 'reservation', 'precedant', 'date_soldee',
+    ];
     protected $dates = ['date_soldee', 'created_at'];
     protected $table = 'encaissements_receptions';
 

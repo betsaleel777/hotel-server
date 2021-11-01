@@ -26,7 +26,9 @@ class Demande extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'code', 'departement', 'status', 'titre',
+    ];
     const RULES = [
         'titre' => 'required|max:150|unique:demandes,titre',
         'departement' => 'required',

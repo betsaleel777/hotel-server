@@ -20,17 +20,20 @@ class PaiementsController extends Controller
     {
         $this->validate($request, Paiement::RULES);
         $facture = Facture::find($request->facture_id);
+        $payed = false;
         if ((int) $request->dejaVerse < (int) $request->montantApayer) {
             $facture->impayer();
         } else {
             $facture->payer();
             $facture->date_soldee = Carbon::now();
+            $payed = true;
         }
         $Paiement = new Paiement($request->except('dejaVerse', 'montantApayer'));
         $Paiement->save();
         $facture->save();
         return response()->json([
             'message' => "Le paiement de la facture $facture->code a été enregistré avec succès.",
+            'payed' => $payed,
         ]);
     }
 }

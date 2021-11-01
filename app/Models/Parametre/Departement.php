@@ -13,7 +13,9 @@ class Departement extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'nom', 'description',
+    ];
 
     const RULES = [
         'nom' => 'required|max:150|unique:departements,nom',

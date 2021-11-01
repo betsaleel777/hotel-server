@@ -11,7 +11,9 @@ class Prix extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'achat', 'vente', 'plat',
+    ];
     protected $table = 'prix_plats';
 
     const RULES = [

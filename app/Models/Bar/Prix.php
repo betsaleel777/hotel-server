@@ -11,7 +11,9 @@ class Prix extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'tournee', 'montant',
+    ];
 
     protected $table = 'prix_tournees';
 

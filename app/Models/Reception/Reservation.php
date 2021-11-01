@@ -12,7 +12,9 @@ class Reservation extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'status', 'prix',
+    ];
     protected $dates = ['entree', 'sortie', 'date_annulation'];
 
     const RULES = [

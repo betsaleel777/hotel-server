@@ -12,7 +12,9 @@ class Versement extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'montant', 'encaissement', 'mobile_money', 'espece', 'cheque', 'monnaie', 'departement',
+    ];
 
     protected $table = 'versements_departements';
 

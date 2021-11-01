@@ -11,7 +11,9 @@ class Cocktail extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'nom', 'description', 'code', 'prix_vente',
+    ];
 
     const RULES = [
         'nom' => 'nullable|unique:cocktails,nom',

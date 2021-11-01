@@ -12,7 +12,9 @@ class Versement extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'montant', 'encaissement', 'mobile_money', 'espece', 'cheque', 'monnaie',
+    ];
 
     const RULES = [
         'montant' => 'required|numeric|min:5000', 'monnaie' => 'required',

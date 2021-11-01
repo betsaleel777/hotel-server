@@ -11,5 +11,7 @@ class Ingredient extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'quantite', 'commentaire', 'produit', 'plat',
+    ];
 }
