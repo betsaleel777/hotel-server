@@ -9,6 +9,7 @@ class Categorie extends Model
 {
     use SoftDeletes;
     protected $guarded = [];
+    protected $cascadeDeletes = ['tournees'];
     protected $table = 'categories_tournees_externes';
 
     const RULES = [

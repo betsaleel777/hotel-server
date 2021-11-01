@@ -2,13 +2,15 @@
 
 namespace App\Models\Externe\Stock\Article;
 
+use Dyrynda\Database\Support\CascadeSoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Categorie extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, CascadeSoftDeletes;
     protected $guarded = [];
+    protected $cascadeDeletes = ['articles'];
     protected $table = 'categories_articles_externes';
 
     const RULES = [

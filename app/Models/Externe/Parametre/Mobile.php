@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Models\Externe\Caisse;
+namespace App\Models\Externe\Parametre;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Table extends Model
+class Mobile extends Model
 {
     use SoftDeletes;
     protected $fillable = ['nom', 'restaurant_id'];
-    protected $table = 'tables_externes';
+    protected $table = 'mobiles_externes';
 
     const RULES = [
-        'nom' => 'required|unique:tables_externes,nom',
+        'nom' => 'required|unique:mobiles_externes,nom',
     ];
 
     public static function regle(int $id)
     {
         return [
-            'nom' => 'required|unique:tables_externes,nom,' . $id,
+            'nom' => 'required|unique:mobiles_externes,nom,' . $id,
         ];
     }
 }
