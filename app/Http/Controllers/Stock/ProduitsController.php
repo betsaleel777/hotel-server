@@ -125,11 +125,11 @@ class ProduitsController extends Controller
         $tourneesVendus = DB::select(DB::Raw(
             "with encaisse as (select c.nom,c.id,sum(ce.quantite) as nombre from cocktails_encaissements ce inner join cocktails c on c.id = ce.cocktail
                  group by ce.cocktail,c.nom,c.id)
-                 select p.id as produit,t1.titre as nom,sum(ct.quantite*e.nombre)*t1.nombre*25 as consommation
+                 select p.id as produit,t1.titre as nom,sum(ct.quantite*e.nombre)*t1.nombre*5 as consommation
                  from cocktails_tournees ct inner join encaisse e on e.id=ct.cocktail inner join tournees t1 on t1.id=ct.tournee
                  inner join produits p on t1.produit = p.id group by ct.tournee,p.id,t1.titre,t1.nombre
                  UNION
-                 select p.id as produit,t.titre as nom,sum(te.quantite)*t.nombre*25 as consommation from tournees_encaissements te
+                 select p.id as produit,t.titre as nom,sum(te.quantite)*t.nombre*5 as consommation from tournees_encaissements te
                  inner join tournees t on t.id = te.tournee inner join produits p on t.produit = p.id group by te.tournee,p.id,t.titre,t.nombre"
         ));
         $articles = [];

@@ -2,6 +2,7 @@
 
 namespace App\Models\Externe\Caisse;
 
+use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Models\Externe\Stock\Article\Article;
 use App\Models\Externe\Stock\Cocktail\Cocktail;
 use App\Models\Externe\Stock\Plat\Plat;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Facture extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, EagerLoadPivotTrait;
 
     protected $guarded = [];
     protected $table = 'factures_externes';

@@ -348,7 +348,7 @@ $router->group(['prefix' => 'externe'], function ($router) {
             $router->get('restaurant/trashed/{restaurant}', 'Externe\Stock\Article\ArticlesController@getTrashedFromRestau');
             $router->get('tournee/{restaurant}', 'Externe\Stock\Article\ArticlesController@getArticlesTourneeFromRestau');
             $router->get('plat/{restaurant}', 'Externe\Stock\Article\ArticlesController@getArticlesPlatFromRestau');
-            $router->get('inventory/{restaurant}', 'Externe\Stock\Article\ArticlesController@inventaireFromRestau');
+            $router->get('inventaire/{restaurant}', 'Externe\Stock\Article\ArticlesController@inventaireFromRestau');
             $router->get('{id}', 'Externe\Stock\Article\ArticlesController@getOne');
             $router->get('restorer/{id}', 'Externe\Stock\Article\ArticlesController@restorer');
             $router->post('new', 'Externe\Stock\Article\ArticlesController@insert');
@@ -409,6 +409,7 @@ $router->group(['prefix' => 'externe'], function ($router) {
             $router->get('restaurant/nonSoldees/{restaurant}', 'Externe\Caisse\FacturesController@getNonSoldeesFromRestau');
             $router->get('restaurant/soldees/{restaurant}', 'Externe\Caisse\FacturesController@getSoldeesFromRestau');
             $router->get('restaurant/trashed/{restaurant}', 'Externe\Caisse\FacturesController@getTrashedFromRestau');
+            $router->get('restaurant/{restaurant}/date/{date}', 'Externe\Caisse\FacturesController@getByDateFromRestau');
             $router->get('{id}', 'Externe\Caisse\FacturesController@getOne');
             $router->get('restorer/{id}', 'Externe\Caisse\FacturesController@restorer');
             $router->post('new', 'Externe\Caisse\FacturesController@insert');

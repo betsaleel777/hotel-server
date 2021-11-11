@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Externe\Caisse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Externe\Caisse\Facture;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class FacturesController extends Controller
@@ -25,6 +26,14 @@ class FacturesController extends Controller
     {
         $factures = Facture::with('paiements', 'articles', 'plats', 'cocktails', 'tournees', 'table')
             ->where('restaurant_id', $restaurant)->payed()->get();
+        return response()->json(['factures' => $factures]);
+    }
+
+    public function getByDateFromRestau(int $restaurant, string $date)
+    {
+        $format = Carbon::parse($date)->format('Y-m-d');
+        $factures = Facture::with('paiements.moyen', 'articles', 'plats', 'cocktails', 'tournees', 'table')
+            ->where('restaurant_id', $restaurant)->whereDate('date_soldee', $format)->get();
         return response()->json(['factures' => $factures]);
     }
 
