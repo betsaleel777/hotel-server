@@ -1,25 +1,16 @@
 <?php
-namespace App\Http\Controllers\Stock;
+
+namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Stock\Categorie;
+use App\Models\Maintenance\Categorie;
 use Illuminate\Http\Request;
 
 class CategoriesController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-
-    }
-
     public function getAll()
     {
-        $categories = Categorie::select('id', 'nom')->get();
+        $categories = Categorie::get();
         return response()->json(['categories' => $categories]);
     }
 
@@ -33,16 +24,8 @@ class CategoriesController extends Controller
     {
         $this->validate($request, Categorie::RULES);
         $categorie = Categorie::create($request->all());
-        $message = "La categorie de plat, $categorie->nom a été crée avec succes.";
-        return response()->json([
-            'message' => $message,
-            'categorie' => ['id' => $categorie->id, 'nom' => $categorie->nom],
-        ]);
-    }
-
-    public function getOne(int $id)
-    {
-
+        $message = "La categorie de réparation, $categorie->nom a été crée avec succes.";
+        return response()->json(['message' => $message]);
     }
 
     public function update(int $id, Request $request)
@@ -51,29 +34,23 @@ class CategoriesController extends Controller
         $categorie = Categorie::find($id);
         $categorie->nom = $request->nom;
         $categorie->save();
-        $message = "La categorie de chambre $categorie->nom a été crée avec succes.";
-        return response()->json([
-            'message' => $message,
-            'categorie' => ['id' => $request->id, 'nom' => $request->nom],
-        ]);
+        $message = "La categorie $categorie->nom a été crée avec succes.";
+        return response()->json(['message' => $message]);
     }
 
     public function delete(int $id)
     {
         $categorie = Categorie::withTrashed()->find($id);
         $categorie->forceDelete();
-        $message = "la catégorie de chambre $categorie->nom a été supprimée avec succès";
-        return response()->json([
-            'message' => $message,
-            'categorie' => ['id' => $categorie->id, 'nom' => $categorie->nom],
-        ]);
+        $message = "La catégorie $categorie->nom a été supprimée avec succès";
+        return response()->json(['message' => $message]);
     }
 
     public function restorer(int $id)
     {
         $categorie = Categorie::withTrashed()->find($id);
         $categorie->restore();
-        $message = "la catégorie $categorie->nom a été restauré avec succès.";
+        $message = "La catégorie $categorie->nom a été restauré avec succès.";
         return response()->json(['message' => $message]);
     }
 
@@ -81,7 +58,7 @@ class CategoriesController extends Controller
     {
         $categorie = Categorie::find($id);
         $categorie->delete();
-        $message = "la catégorie $categorie->nom a été archivé avec succès.";
+        $message = "La catégorie $categorie->nom a été archivé avec succès.";
         return response()->json(['message' => $message]);
     }
 }

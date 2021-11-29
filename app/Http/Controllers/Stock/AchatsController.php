@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
-use App\Models\Restaurant\Ingredient;
 use App\Models\Stock\Achat;
 use App\Models\Stock\Produit;
 use Illuminate\Http\Request;
@@ -30,28 +29,21 @@ class AchatsController extends Controller
         return response()->json(['achats' => $achats]);
     }
 
+    public function compacte()
+    {
+        $achats = DB::select(Db::Raw("SELECT sum(prix_achat) as montant,created_at FROM approvisionements group by date(created_at)"));
+        return response()->json(['achats' => $achats]);
+    }
+
     public function insert(Request $request)
     {
         $this->validate($request, Achat::RULES);
         $achat = new achat($request->all());
         $achat->genererCode();
         $achat->save();
-        $achat = Achat::with('produit')->find($achat->id);
-        $message = "l' achat de l'article: $achat->produit->nom a  été crée avec succès.";
-        return response()->json([
-            'message' => $message,
-            'achat' => [
-                'id' => $achat->id,
-                'code' => $achat->code,
-                'quantite' => $achat->quantite,
-                'prix_achat' => $achat->prix_achat,
-                'prix_vente' => $achat->prix_vente,
-                'ingredient' => $achat->ingredient,
-                'nom' => $achat->produit->nom,
-                'mesure' => $achat->produit->mesure,
-                'type' => $achat->produit->type,
-            ],
-        ]);
+        $produit = Produit::find($achat->ingredient);
+        $message = "l' achat de l'article: $produit->nom a  été crée avec succès.";
+        return response()->json(['message' => $message]);
     }
 
     public function getOne(int $id)

@@ -107,6 +107,7 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
     });
     $router->group(['prefix' => 'achats'], function () use ($router) {
         $router->get('/', 'Stock\AchatsController@getAll');
+        $router->get('/compacte', 'Stock\AchatsController@compacte');
         $router->post('new', 'Stock\AchatsController@insert');
         $router->put('{id}', 'Stock\AchatsController@update');
         $router->delete('{id}', 'Stock\AchatsController@delete');
@@ -215,24 +216,42 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->group(['prefix' => 'chambres'], function () use ($router) {
             $router->get('/', 'GestionChambre\CategoriesController@getAll');
+            $router->get('trashed', 'GestionChambre\CategoriesController@getTrashed');
+            $router->get('restorer/{id}', 'GestionChambre\CategoriesController@restorer');
             $router->get('/{name}', 'GestionChambre\CategoriesController@getByName');
             $router->post('new', 'GestionChambre\CategoriesController@insert');
             $router->put('{id}', 'GestionChambre\CategoriesController@update');
             $router->delete('{id}', 'GestionChambre\CategoriesController@delete');
+            $router->delete('archiver/{id}', 'GestionChambre\CategoriesController@trash');
         });
         $router->group(['prefix' => 'articles'], function () use ($router) {
             $router->get('/', 'Stock\CategoriesController@getAll');
+            $router->get('trashed', 'Stock\CategoriesController@getTrashed');
+            $router->get('restorer/{id}', 'Stock\CategoriesController@restorer');
             $router->get('/{name}', 'Stock\CategoriesController@getByName');
             $router->post('new', 'Stock\CategoriesController@insert');
             $router->put('{id}', 'Stock\CategoriesController@update');
             $router->delete('{id}', 'Stock\CategoriesController@delete');
+            $router->delete('archiver/{id}', 'Stock\CategoriesController@trash');
         });
         $router->group(['prefix' => 'plats'], function () use ($router) {
             $router->get('/', 'Restaurant\CategoriesController@getAll');
+            $router->get('trashed', 'Restaurant\CategoriesController@getTrashed');
+            $router->get('restorer/{id}', 'Restaurant\CategoriesController@restorer');
             $router->get('/{name}', 'Restaurant\CategoriesController@getByName');
             $router->post('new', 'Restaurant\CategoriesController@insert');
             $router->put('{id}', 'Restaurant\CategoriesController@update');
             $router->delete('{id}', 'Restaurant\CategoriesController@delete');
+            $router->delete('archiver/{id}', 'Restaurant\CategoriesController@trash');
+        });
+        $router->group(['prefix' => 'maintenance'], function () use ($router) {
+            $router->get('/', 'Maintenance\CategoriesController@getAll');
+            $router->get('trashed', 'Maintenance\CategoriesController@getTrashed');
+            $router->get('restorer/{id}', 'Maintenance\CategoriesController@restorer');
+            $router->post('new', 'Maintenance\CategoriesController@insert');
+            $router->put('{id}', 'Maintenance\CategoriesController@update');
+            $router->delete('{id}', 'Maintenance\CategoriesController@delete');
+            $router->delete('archiver/{id}', 'Maintenance\CategoriesController@trash');
         });
     });
 
@@ -259,6 +278,60 @@ $router->group(['prefix' => 'parametre'], function () use ($router) {
         $router->post('new', 'Parametre\PermissionsController@insert');
         $router->put('{id}', 'Parametre\PermissionsController@update');
         $router->delete('{id}', 'Parametre\PermissionsController@delete');
+    });
+});
+
+$router->group(['prefix' => 'maintenance'], function () use ($router) {
+    $router->group(['prefix' => 'fournitures'], function () use ($router) {
+        $router->get('/', 'Maintenance\FournituresController@getAll');
+        $router->get('trashed', 'Maintenance\FournituresController@getTrashed');
+        $router->get('{id}', 'Maintenance\FournituresController@getOne');
+        $router->get('restorer/{id}', 'Maintenance\FournituresController@restorer');
+        $router->post('new', 'Maintenance\FournituresController@insert');
+        $router->put('{id}', 'Maintenance\FournituresController@update');
+        $router->delete('{id}', 'Maintenance\FournituresController@delete');
+        $router->delete('archiver/{id}', 'Maintenance\FournituresController@trash');
+    });
+    $router->group(['prefix' => 'providers'], function () use ($router) {
+        $router->get('/', 'Maintenance\ProvidersController@getAll');
+        $router->get('trashed', 'Maintenance\ProvidersController@getTrashed');
+        $router->get('{id}', 'Maintenance\ProvidersController@getOne');
+        $router->get('restorer/{id}', 'Maintenance\ProvidersController@restorer');
+        $router->post('new', 'Maintenance\ProvidersController@insert');
+        $router->put('{id}', 'Maintenance\ProvidersController@update');
+        $router->delete('{id}', 'Maintenance\ProvidersController@delete');
+        $router->delete('archiver/{id}', 'Maintenance\ProvidersController@trash');
+    });
+    $router->group(['prefix' => 'employes'], function () use ($router) {
+        $router->get('/', 'Maintenance\EmployesController@getAll');
+        $router->get('trashed', 'Maintenance\EmployesController@getTrashed');
+        $router->get('{id}', 'Maintenance\EmployesController@getOne');
+        $router->get('restorer/{id}', 'Maintenance\EmployesController@restorer');
+        $router->post('new', 'Maintenance\EmployesController@insert');
+        $router->put('{id}', 'Maintenance\EmployesController@update');
+        $router->delete('{id}', 'Maintenance\EmployesController@delete');
+        $router->delete('archiver/{id}', 'Maintenance\EmployesController@trash');
+
+    });
+    $router->group(['prefix' => 'entretiens'], function () use ($router) {
+        $router->get('/', 'Maintenance\EntretiensController@getAll');
+        $router->get('trashed', 'Maintenance\EntretiensController@getTrashed');
+        $router->get('{id}', 'Maintenance\EntretiensController@getOne');
+        $router->get('restorer/{id}', 'Maintenance\EntretiensController@restorer');
+        $router->post('new', 'Maintenance\EntretiensController@insert');
+        $router->put('{id}', 'Maintenance\EntretiensController@update');
+        $router->delete('{id}', 'Maintenance\EntretiensController@delete');
+        $router->delete('archiver/{id}', 'Maintenance\EntretiensController@trash');
+    });
+    $router->group(['prefix' => 'reparations'], function () use ($router) {
+        $router->get('/', 'Maintenance\ReparationsController@getAll');
+        $router->get('trashed', 'Maintenance\ReparationsController@getTrashed');
+        $router->get('{id}', 'Maintenance\ReparationsController@getOne');
+        $router->get('restorer/{id}', 'Maintenance\ReparationsController@restorer');
+        $router->post('new', 'Maintenance\ReparationsController@insert');
+        $router->put('{id}', 'Maintenance\ReparationsController@update');
+        $router->delete('{id}', 'Maintenance\ReparationsController@delete');
+        $router->delete('archiver/{id}', 'Maintenance\ReparationsController@trash');
     });
 });
 // routes pour la gestion du restaurant externe ------------------------------------------------------------------------------------

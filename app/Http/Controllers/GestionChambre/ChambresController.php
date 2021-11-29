@@ -78,7 +78,7 @@ class ChambresController extends Controller
 
     public function getOne(int $id)
     {
-        $chambre = Chambre::with(['prixList' => function ($query) {return $query->orderBy('id', 'DESC');}])->find($id);
+        $chambre = Chambre::with(['prixList' => function ($query) {return $query->orderBy('created_at', 'ASC');}, 'categorieLinked'])->find($id);
         return response()->json(['chambre' => $chambre]);
     }
 

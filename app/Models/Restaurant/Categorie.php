@@ -3,14 +3,11 @@
 namespace App\Models\Restaurant;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Categorie extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    use SoftDeletes;
     protected $fillable = [
         'nom',
     ];

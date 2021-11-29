@@ -3,6 +3,7 @@
 namespace App\Models\Stock;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Categorie extends Model
 {
@@ -11,6 +12,8 @@ class Categorie extends Model
      *
      * @var array
      */
+    use SoftDeletes;
+
     protected $fillable = [
         'nom',
     ];
