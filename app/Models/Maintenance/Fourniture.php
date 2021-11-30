@@ -14,7 +14,7 @@ class Fourniture extends Model
         'nom' => 'required|unique:fournitures,nom',
     ];
 
-    public static function regles(int $id)
+    public static function regle(int $id)
     {
         return [
             'nom' => 'required|unique:fournitures,nom,' . $id,

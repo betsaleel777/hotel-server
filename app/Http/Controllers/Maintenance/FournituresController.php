@@ -30,6 +30,7 @@ class FournituresController extends Controller
     {
         $this->validate($request, Fourniture::RULES);
         $fourniture = new Fourniture($request->all());
+        $fourniture->genererCode();
         $fourniture->save();
         $message = "la fourniture $fourniture->nom a été crée avec succès.";
         return response()->json(['message' => $message]);

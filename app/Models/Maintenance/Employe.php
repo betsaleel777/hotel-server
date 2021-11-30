@@ -14,18 +14,20 @@ class Employe extends Model
         'nom' => 'required|unique:employes,nom',
         'prenom' => 'required',
         'poste' => 'required',
-        'email' => 'nullable|email|unique:employes,email',
+        'adresse' => 'required',
         'telephone' => 'required|unique:employes,telephone',
+        'email' => 'nullable|email|unique:employes,email',
     ];
 
-    public static function regles(int $id)
+    public static function regle(int $id)
     {
         return [
             'nom' => 'required|unique:employes,nom,' . $id,
             'prenom' => 'required',
             'poste' => 'required',
-            'email' => 'nullable|email|unique:employes,email,' . $id,
+            'adresse' => 'required',
             'telephone' => 'required|unique:employes,telephone,' . $id,
+            'email' => 'nullable|email|unique:employes,email,' . $id,
         ];
     }
 

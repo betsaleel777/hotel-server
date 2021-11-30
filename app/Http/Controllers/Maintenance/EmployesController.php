@@ -30,6 +30,7 @@ class EmployesController extends Controller
     {
         $this->validate($request, Employe::RULES);
         $employe = new Employe($request->all());
+        $employe->genererCode();
         $employe->save();
         $message = "l'employé $employe->nom a été crée avec succès.";
         return response()->json(['message' => $message]);
