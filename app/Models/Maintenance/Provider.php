@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Provider extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['nom', 'code', 'telephone', 'prenom', 'email', 'adresse', 'categorie_id'];
+    protected $fillable = ['nom', 'code', 'telephone', 'prenom', 'email', 'adresse', 'categorie_id', 'color'];
 
     const RULES = [
         'nom' => 'required|unique:providers,nom',
@@ -16,9 +16,10 @@ class Provider extends Model
         'categorie_id' => 'required',
         'email' => 'nullable|email|unique:providers,email',
         'telephone' => 'required|unique:providers,telephone',
+        'color' => 'required|unique:providers,color,',
     ];
 
-    public static function regles(int $id)
+    public static function regle(int $id)
     {
         return [
             'nom' => 'required|unique:providers,nom,' . $id,
@@ -26,6 +27,7 @@ class Provider extends Model
             'categorie_id' => 'required',
             'email' => 'nullable|email|unique:providers,email,' . $id,
             'telephone' => 'required|unique:providers,telephone,' . $id,
+            'color' => 'required|unique:providers,color,' . $id,
         ];
     }
 
@@ -34,5 +36,10 @@ class Provider extends Model
         $chiffres = '0123456789';
         $lettres = 'abcdefghijklmnopqrstuvwxyz';
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
+    }
+
+    public function categorie()
+    {
+        return $this->belongsTo(Categorie::class);
     }
 }

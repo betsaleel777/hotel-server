@@ -10,13 +10,13 @@ class ProvidersController extends Controller
 {
     public function getAll()
     {
-        $providers = Provider::get();
+        $providers = Provider::with('categorie')->get();
         return response()->json(['providers' => $providers]);
     }
 
     public function getTrashed()
     {
-        $providers = Provider::onlyTrashed()->get();
+        $providers = Provider::onlyTrashed()->with('categorie')->get();
         return response()->json(['providers' => $providers]);
     }
 

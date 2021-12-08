@@ -44,7 +44,7 @@ class CategoriesController extends Controller
         $categorie = new Categorie($request->all());
         $categorie->save();
         $message = "la categorie $categorie->nom a été crée avec succès.";
-        return response()->json(['message' => $message]);
+        return response()->json(['message' => $message, 'id' => $categorie->id]);
     }
 
     public function update(int $id, Request $request)

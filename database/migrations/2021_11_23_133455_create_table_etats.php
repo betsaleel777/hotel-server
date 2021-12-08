@@ -17,10 +17,7 @@ class CreateTableEtats extends Migration
             $table->id();
             $table->foreignId('fourniture_id')->constrained('fournitures')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('chambre_id')->constrained('chambres')->onDelete('cascade')->onUpdate('cascade');
-            $table->boolean('bon');
-            $table->boolean('acceptable');
-            $table->boolean('vetuste');
-            $table->boolean('inexistant');
+            $table->string('libelle', 25);
             $table->timestamps();
         });
     }

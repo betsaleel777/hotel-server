@@ -2,7 +2,9 @@
 
 namespace App\Models\GestionChambre;
 
+use App\Models\Maintenance\Fourniture;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Chambre extends Model
 {
@@ -68,5 +70,10 @@ class Chambre extends Model
     public function prixList()
     {
         return $this->hasMany(PrixChambre::class, 'chambre');
+    }
+
+    public function equipements()
+    {
+        return $this->belongsToMany(Fourniture::class, 'etats')->withPivot('libelle', 'quantite')->withTimestamps();
     }
 }

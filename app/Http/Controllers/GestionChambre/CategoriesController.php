@@ -34,10 +34,7 @@ class CategoriesController extends Controller
         $this->validate($request, CategorieChambre::RULES);
         $categorie = CategorieChambre::create($request->all());
         $message = "La categorie de chambre $categorie->nom a été crée avec succes.";
-        return response()->json([
-            'message' => $message,
-            'categorie' => ['id' => $categorie->id, 'nom' => $categorie->nom],
-        ]);
+        return response()->json(['message' => $message, 'id' => $categorie->id]);
     }
 
     public function getOne(int $id)

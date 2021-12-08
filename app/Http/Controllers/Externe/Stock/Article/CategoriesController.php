@@ -54,7 +54,7 @@ class CategoriesController extends Controller
         $categorie->fill($request->except('restaurant_id'));
         $categorie->save();
         $message = "la categorie $categorie->nom a été crée avec succès.";
-        return response()->json(['message' => $message]);
+        return response()->json(['message' => $message, 'id' => $categorie->id]);
     }
 
     public function restorer(int $id)

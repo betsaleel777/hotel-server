@@ -69,16 +69,27 @@ class ChambresController extends Controller
         $prix->chambre = $chambre->id;
         $prix->save();
 
-        $chambre = Chambre::with(['prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked'])->find($chambre->id);
         $message = "La chambre $chambre->nom a été crée avec succes.";
+        return response()->json(['message' => $message]);
+    }
+
+    public function insertState(Request $request)
+    {
+        $chambre = Chambre::find($request->id);
+        foreach ($request->equipements as $equipement) {
+            $chambre->equipements()->attach($equipement['id'], [
+                'quantite' => $equipement['quantite'],
+                'libelle' => $equipement['libelle'],
+            ]);
+        }
+        $message = "L'état de la chambre $chambre->nom a été crée avec succès.";
         return response()->json(['message' => $message]);
     }
 
     public function getOne(int $id)
     {
-        $chambre = Chambre::with(['prixList' => function ($query) {return $query->orderBy('created_at', 'ASC');}, 'categorieLinked'])->find($id);
+        $chambre = Chambre::with(['prixList' => function ($query) {
+            return $query->orderBy('created_at', 'ASC');}, 'categorieLinked', 'equipements'])->find($id);
         return response()->json(['chambre' => $chambre]);
     }
 
@@ -91,7 +102,6 @@ class ChambresController extends Controller
         $chambre->nom = $request->nom;
         $chambre->prix_vente = $request->montant;
         $chambre->categorie = $request->categorie;
-        $dirtyChambre = $chambre->isDirty();
         $chambre->save();
 
         $prix = new PrixChambre(['montant' => $request->montant]);
@@ -100,11 +110,19 @@ class ChambresController extends Controller
         if ($dirtyPrix) {
             $prix->save();
         }
-        $retour = [];
-        $chambre = Chambre::with(['prixList' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked'])->find($chambre->id);
         $message = "La chambre a été modifiée avec succès.";
+        return response()->json(['message' => $message]);
+    }
+
+    public function updateState(int $id, Request $request)
+    {
+        $chambre = Chambre::find($request->id);
+        $toSync = [];
+        foreach ($request->equipements as $equipement) {
+            $toSync[$equipement['id']] = ['quantite' => $equipement['quantite'], 'libelle' => $equipement['libelle']];
+        }
+        $chambre->equipements()->sync($toSync);
+        $message = "L'état de la chambre $chambre->nom a été modifié avec succès.";
         return response()->json(['message' => $message]);
     }
 

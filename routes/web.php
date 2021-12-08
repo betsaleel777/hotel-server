@@ -33,6 +33,9 @@ $router->group(['prefix' => 'gestion-chambre'], function () use ($router) {
         $router->put('{id}', 'GestionChambre\ChambresController@update');
         $router->delete('{id}', 'GestionChambre\ChambresController@delete');
         //other
+        $router->post('equipement/new', 'GestionChambre\ChambresController@insertState');
+        $router->put('equipement/{id}', 'GestionChambre\ChambresController@updateState');
+
     });
     $router->group(['prefix' => 'categories'], function () use ($router) {
         $router->get('/', 'GestionChambre\CategoriesController@getAll');

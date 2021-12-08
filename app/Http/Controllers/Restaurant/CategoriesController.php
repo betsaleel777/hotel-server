@@ -34,7 +34,7 @@ class CategoriesController extends Controller
         $this->validate($request, Categorie::RULES);
         $categorie = Categorie::create($request->all());
         $message = "La categorie de plat, $categorie->nom a été crée avec succes.";
-        return response()->json(['message' => $message]);
+        return response()->json(['message' => $message, 'id' => $categorie->id]);
     }
 
     public function getOne(int $id)
