@@ -2,6 +2,7 @@
 
 namespace App\Models\Maintenance;
 
+use App\Models\GestionChambre\Chambre;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -13,12 +14,22 @@ class Reparation extends Model
     const RULES = [
         'categorie_id' => 'required',
         'chambre_id' => 'required',
-        'nom' => 'required|unique:reparation,nom',
+        'jour' => 'required',
+        'nom' => 'required|unique:reparations,nom',
     ];
 
-    const EN_COURS = 'en cours';
-    const TERMINER = 'terminer';
-    const INACHEVER = 'inachever';
+    public static function regle(int $id)
+    {
+        return [
+            'categorie_id' => 'required',
+            'jour' => 'required',
+            'nom' => 'required|unique:reparations,nom,' . $id,
+        ];
+    }
+
+    const EN_COURS = 'current';
+    const TERMINER = 'complete';
+    const INACHEVER = 'incomplete';
 
     public function genererCode()
     {
@@ -35,5 +46,10 @@ class Reparation extends Model
     public function categorie()
     {
         return $this->belongsTo(Categorie::class);
+    }
+
+    public function ordres()
+    {
+        return $this->hasMany(OrdresReparation::class);
     }
 }

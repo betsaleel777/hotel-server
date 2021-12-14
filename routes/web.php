@@ -329,7 +329,9 @@ $router->group(['prefix' => 'maintenance'], function () use ($router) {
     $router->group(['prefix' => 'reparations'], function () use ($router) {
         $router->get('/', 'Maintenance\ReparationsController@getAll');
         $router->get('trashed', 'Maintenance\ReparationsController@getTrashed');
+        $router->get('ordres', 'Maintenance\ReparationsController@getOrdres');
         $router->get('{id}', 'Maintenance\ReparationsController@getOne');
+        $router->get('/date/{date}', 'Maintenance\ReparationsController@getByDate');
         $router->get('restorer/{id}', 'Maintenance\ReparationsController@restorer');
         $router->post('new', 'Maintenance\ReparationsController@insert');
         $router->put('{id}', 'Maintenance\ReparationsController@update');
