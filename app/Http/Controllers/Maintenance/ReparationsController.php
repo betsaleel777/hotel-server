@@ -30,7 +30,7 @@ class ReparationsController extends Controller
 
     public function getOne(int $id)
     {
-        $reparation = Reparation::with('chambre', 'categorie', 'ordres')->find($id);
+        $reparation = Reparation::with('chambre', 'categorie', 'ordres.provider')->find($id);
         return response()->json(['reparation' => $reparation]);
     }
 
