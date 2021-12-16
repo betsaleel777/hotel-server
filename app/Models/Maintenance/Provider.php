@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Provider extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['nom', 'code', 'telephone', 'prenom', 'email', 'adresse', 'categorie_id', 'color'];
+    protected $fillable = ['nom', 'code', 'telephone', 'prenom', 'email', 'adresse', 'categorie_id'];
 
     const RULES = [
         'nom' => 'required|unique:providers,nom',
@@ -16,7 +16,6 @@ class Provider extends Model
         'categorie_id' => 'required',
         'email' => 'nullable|email|unique:providers,email',
         'telephone' => 'required|unique:providers,telephone',
-        'color' => 'required|unique:providers,color,',
     ];
 
     public static function regle(int $id)
@@ -27,7 +26,6 @@ class Provider extends Model
             'categorie_id' => 'required',
             'email' => 'nullable|email|unique:providers,email,' . $id,
             'telephone' => 'required|unique:providers,telephone,' . $id,
-            'color' => 'required|unique:providers,color,' . $id,
         ];
     }
 

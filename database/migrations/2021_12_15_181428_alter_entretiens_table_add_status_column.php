@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterTableProvidersAddColorColumn extends Migration
+class AlterEntretiensTableAddStatusColumn extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AlterTableProvidersAddColorColumn extends Migration
      */
     public function up()
     {
-        Schema::table('providers', function (Blueprint $table) {
-            $table->string('color', 50)->nullable();
+        Schema::table('entretiens', function (Blueprint $table) {
+            $table->string('status', 50)->nullable();
         });
     }
 
@@ -25,7 +25,7 @@ class AlterTableProvidersAddColorColumn extends Migration
      */
     public function down()
     {
-        Schema::table('providers', function (Blueprint $table) {
+        Schema::table('entretiens', function (Blueprint $table) {
             //
         });
     }

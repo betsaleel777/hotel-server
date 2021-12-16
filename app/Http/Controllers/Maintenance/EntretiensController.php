@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Maintenance\Entretien;
+use App\Models\Maintenance\Note;
 use Illuminate\Http\Request;
 
 class EntretiensController extends Controller
 {
     public function getAll()
     {
-        $entretiens = Entretien::with('employe', 'chambre')->get();
+        $entretiens = Entretien::with('employe', 'chambre', 'note')->get();
         return response()->json(['entretiens' => $entretiens]);
     }
 
@@ -22,32 +23,42 @@ class EntretiensController extends Controller
 
     public function getOne(int $id)
     {
-        $entretien = Entretien::with('employe', 'chambre')->find($id);
+        $entretien = Entretien::with('employe', 'chambre', 'note')->find($id);
         return response()->json(['entretien' => $entretien]);
     }
 
     public function insert(Request $request)
     {
-        $message = "Les entretiens: ";
         foreach ($request->dates as $date) {
             $entretien = new Entretien($request->all());
             $entretien->genererCode();
             $entretien->entree = $date['entree'];
             $entretien->sortie = $date['sortie'];
             $entretien->save();
-            $message .= "$entretien->code, ";
         }
-        $message .= "ont été enregistrés avec succès.";
+        $message = "Tout les entretiens de la liste sont été enregistrés avec succès.";
         return response()->json(['message' => $message]);
     }
 
     public function update(Request $request, int $id)
     {
-        $this->validate($request, Entretien::RULES);
-        $entretien = Entretien::find($id);
-        $entretien->fill($request->all());
-        $entretien->save();
-        $message = "l'entretien $entretien->code a été modifié avec succès.";
+        if ($request->has('description')) {
+            $this->validate($request, Note::RULES);
+            $entretien = Entretien::find($id);
+            $entretien->description = $request->description;
+            $entretien->status = Entretien::TERMINER;
+            $entretien->save();
+            $note = new Note($request->all());
+            $note->entretien_id = $id;
+            $note->save();
+            $message = "L'entretien a été noté et commenté avec succès.";
+        } else {
+            $this->validate($request, Entretien::RULES);
+            $entretien = Entretien::find($id);
+            $entretien->fill($request->all());
+            $entretien->save();
+            $message = "L'entretien a été modifié avec succès.";
+        }
         return response()->json(['message' => $message]);
     }
 
@@ -55,7 +66,7 @@ class EntretiensController extends Controller
     {
         $entretien = Entretien::withTrashed()->find($id);
         $entretien->forceDelete();
-        $message = "l'entretien $entretien->code a été définitivement supprimé.";
+        $message = "L'entretien $entretien->code a été définitivement supprimé.";
         return response()->json(['message' => $message]);
     }
 
@@ -63,7 +74,7 @@ class EntretiensController extends Controller
     {
         $entretien = Entretien::withTrashed()->find($id);
         $entretien->restore();
-        $message = "l'entretien $entretien->code a été restauré avec succès.";
+        $message = "L'entretien $entretien->code a été restauré avec succès.";
         return response()->json(['message' => $message]);
     }
 
@@ -71,7 +82,7 @@ class EntretiensController extends Controller
     {
         $entretien = Entretien::find($id);
         $entretien->delete();
-        $message = "l'entretien $entretien->code a été archivé avec succès.";
+        $message = "L'entretien $entretien->code a été archivé avec succès.";
         return response()->json(['message' => $message]);
     }
 }

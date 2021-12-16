@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Employe extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['nom', 'code', 'telephone', 'poste', 'prenom', 'email', 'adresse', 'color'];
+    protected $fillable = ['nom', 'code', 'telephone', 'poste', 'prenom', 'email', 'adresse'];
 
     const RULES = [
         'nom' => 'required|unique:employes,nom',
@@ -17,7 +17,6 @@ class Employe extends Model
         'adresse' => 'required',
         'telephone' => 'required|unique:employes,telephone',
         'email' => 'nullable|email|unique:employes,email',
-        'color' => 'required|unique:employes,color',
     ];
 
     public static function regle(int $id)
@@ -29,7 +28,6 @@ class Employe extends Model
             'adresse' => 'required',
             'telephone' => 'required|unique:employes,telephone,' . $id,
             'email' => 'nullable|email|unique:employes,email,' . $id,
-            'color' => 'required|unique:employes,color,' . $id,
         ];
     }
 
@@ -38,5 +36,10 @@ class Employe extends Model
         $chiffres = '0123456789';
         $lettres = 'abcdefghijklmnopqrstuvwxyz';
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
+    }
+
+    public function entretiens()
+    {
+        return $this->hasMany(Entretien::class);
     }
 }

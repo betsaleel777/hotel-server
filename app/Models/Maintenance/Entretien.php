@@ -11,6 +11,7 @@ class Entretien extends Model
     use SoftDeletes;
     protected $fillable = ['employe_id', 'chambre_id', 'entree', 'sortie', 'description', 'code'];
 
+    const TERMINER = 'complete';
     const RULES = [
         'employe_id' => 'required',
         'chambre_id' => 'required',
@@ -33,5 +34,10 @@ class Entretien extends Model
     public function employe()
     {
         return $this->belongsTo(Employe::class);
+    }
+
+    public function note()
+    {
+        return $this->hasOne(Note::class);
     }
 }
