@@ -38,6 +38,11 @@ class Reparation extends Model
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
     }
 
+    public function scopeIncompleted($query)
+    {
+        return $query->where('status', self::INACHEVER);
+    }
+
     public function chambre()
     {
         return $this->BelongsTo(Chambre::class);

@@ -22,7 +22,7 @@ class ProvidersController extends Controller
 
     public function getOne(int $id)
     {
-        $provider = Provider::find($id);
+        $provider = Provider::with('categorie', 'ordres.reparation')->find($id);
         return response()->json(['provider' => $provider]);
     }
 

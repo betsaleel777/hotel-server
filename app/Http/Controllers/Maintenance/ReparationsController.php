@@ -28,6 +28,14 @@ class ReparationsController extends Controller
         return response()->json(['ordres' => $ordres]);
     }
 
+    public function getIncompletes()
+    {
+        $ordres = OrdresReparation::with(['reparation' => function ($q) {
+            $q->incompleted();
+        }, 'reparation.chambre', 'reparation.categorie', 'provider'])->get();
+        return response()->json(['ordres' => $ordres]);
+    }
+
     public function getOne(int $id)
     {
         $reparation = Reparation::with('chambre', 'categorie', 'ordres.provider')->find($id);
@@ -50,11 +58,13 @@ class ReparationsController extends Controller
             $reparation->genererCode();
             $reparation->save();
             $ordre = new OrdresReparation($request->all());
+            $ordre->genererCode();
             $ordre->reparation_id = $reparation->id;
             $ordre->save();
         } else {
             $this->validate($request, OrdresReparation::RULES);
             $ordre = new OrdresReparation($request->all());
+            $ordre->genererCode();
             $ordre->reparation_id = $request->incomplete;
             $ordre->save();
         }
