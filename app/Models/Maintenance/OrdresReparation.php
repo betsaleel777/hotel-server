@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrdresReparation extends Model
 {
 
-    protected $fillable = ['entree', 'sortie', 'reparation_id', 'provider_id', 'fermeture', 'montant', 'devis', 'description'];
+    protected $fillable = ['code', 'entree', 'sortie', 'reparation_id', 'provider_id', 'fermeture', 'montant', 'devis', 'description', 'status'];
     protected $dates = ['entree', 'sortie'];
 
     const RULES = [
@@ -24,6 +24,13 @@ class OrdresReparation extends Model
         'description' => 'required',
         'montant' => 'required',
     ];
+
+    public function genererCode()
+    {
+        $chiffres = '0123456789';
+        $lettres = 'abcdefghijklmnopqrstuvwxyz';
+        $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
+    }
 
     public function reparation()
     {

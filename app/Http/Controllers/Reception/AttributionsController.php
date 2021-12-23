@@ -42,6 +42,13 @@ class AttributionsController extends Controller
         return response()->json(['attributions' => $attributions]);
     }
 
+    public function getByRoom(int $room)
+    {
+        $attributions = Attribution::with('clientLinked', 'consommations.plats', 'consommations.cocktails',
+            'consommations.tournees')->where('chambre', $room)->orderBy('entree', 'DESC')->get();
+        return response()->json(['attributions' => $attributions]);
+    }
+
     public function insert(Request $request)
     {
         $this->validate($request, Attribution::RULES);

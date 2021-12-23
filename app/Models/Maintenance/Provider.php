@@ -40,4 +40,8 @@ class Provider extends Model
     {
         return $this->belongsTo(Categorie::class);
     }
+    public function ordres()
+    {
+        return $this->hasMany(OrdresReparation::class);
+    }
 }

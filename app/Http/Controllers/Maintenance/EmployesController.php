@@ -22,8 +22,8 @@ class EmployesController extends Controller
 
     public function getOne(int $id)
     {
-        $employe = Employe::find($id);
-        return response()->json(['employé' => $employe]);
+        $employe = Employe::with('entretiens.note')->find($id);
+        return response()->json(['employe' => $employe]);
     }
 
     public function insert(Request $request)
