@@ -64,6 +64,7 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
     $router->group(['prefix' => 'attributions'], function () use ($router) {
         $router->get('/', 'Reception\AttributionsController@getAll');
         $router->get('/busy', 'Reception\AttributionsController@getBusy');
+        $router->get('room/{room}', 'Reception\AttributionsController@getByRoom');
         $router->get('/{id}', 'Reception\AttributionsController@getOne');
         $router->post('new', 'Reception\AttributionsController@insert');
         $router->put('{id}', 'Reception\AttributionsController@update');
@@ -320,6 +321,7 @@ $router->group(['prefix' => 'maintenance'], function () use ($router) {
         $router->get('/', 'Maintenance\EntretiensController@getAll');
         $router->get('trashed', 'Maintenance\EntretiensController@getTrashed');
         $router->get('{id}', 'Maintenance\EntretiensController@getOne');
+        $router->get('room/{room}', 'Maintenance\EntretiensController@getByRoom');
         $router->get('restorer/{id}', 'Maintenance\EntretiensController@restorer');
         $router->post('new', 'Maintenance\EntretiensController@insert');
         $router->put('{id}', 'Maintenance\EntretiensController@update');
@@ -330,6 +332,7 @@ $router->group(['prefix' => 'maintenance'], function () use ($router) {
         $router->get('/', 'Maintenance\ReparationsController@getAll');
         $router->get('trashed', 'Maintenance\ReparationsController@getTrashed');
         $router->get('ordres', 'Maintenance\ReparationsController@getOrdres');
+        $router->get('room/{room}', 'Maintenance\ReparationsController@getByRoom');
         $router->get('ordres/incompletes', 'Maintenance\ReparationsController@getIncompletes');
         $router->get('{id}', 'Maintenance\ReparationsController@getOne');
         $router->get('/date/{date}', 'Maintenance\ReparationsController@getByDate');

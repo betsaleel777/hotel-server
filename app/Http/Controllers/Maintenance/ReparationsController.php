@@ -28,6 +28,18 @@ class ReparationsController extends Controller
         return response()->json(['ordres' => $ordres]);
     }
 
+    public function getByRoom(int $room)
+    {
+        $reparations = Reparation::with(['ordres' => function ($query) {
+            $query->orderBy('entree', 'DESC');
+        }, 'ordres.provider', 'chambre', 'categorie'])->where('chambre_id', $room)->get()->toArray();
+        $ordres = [];
+        foreach ($reparations as $reparation) {
+            $ordres = array_merge($ordres, $reparation['ordres']);
+        };
+        return response()->json(['ordres' => $ordres]);
+    }
+
     public function getIncompletes()
     {
         $ordres = OrdresReparation::with(['reparation' => function ($q) {

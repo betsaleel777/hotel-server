@@ -27,6 +27,12 @@ class EntretiensController extends Controller
         return response()->json(['entretien' => $entretien]);
     }
 
+    public function getByRoom(int $room)
+    {
+        $entretiens = Entretien::with('employe', 'chambre', 'note')->where('chambre_id', $room)->has('note')->orderBy('entree', 'DESC')->get();
+        return response()->json(['entretiens' => $entretiens]);
+    }
+
     public function insert(Request $request)
     {
         foreach ($request->dates as $date) {
