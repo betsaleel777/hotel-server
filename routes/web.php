@@ -106,8 +106,7 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->get('/boissons', 'Stock\ProduitsController@getBoissonProducts');
         $router->get('/tournees', 'Stock\ProduitsController@getTourneesProducts');
         $router->get('disponibles', 'Stock\ProduitsController@inventaire');
-        $router->get('disponibles/bar', 'Stock\ProduitsController@inventaireBar');
-        $router->get('disponibles/restau', 'Stock\ProduitsController@inventaireRestau');
+        $router->get('disponibles/{departement}', 'Stock\ProduitsController@inventaireDepartement');
         $router->post('new', 'Stock\ProduitsController@insert');
         $router->put('{id}', 'Stock\ProduitsController@update');
         $router->delete('{id}', 'Stock\ProduitsController@delete');
