@@ -100,11 +100,17 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 $router->group(['prefix' => 'stock'], function () use ($router) {
     $router->group(['prefix' => 'produits'], function () use ($router) {
         $router->get('/', 'Stock\ProduitsController@getAll');
+        $router->get('/bar-childs', 'Stock\ProduitsController@getChildsBarProducts');
+        $router->get('/resto-childs', 'Stock\ProduitsController@getChildsRestoProducts');
         $router->get('/inventaire', 'Stock\ProduitsController@inventaire');
         $router->get('/inventaire/sortie', 'Stock\ProduitsController@inventaireSortie');
         $router->get('/plats', 'Stock\ProduitsController@getPlatProducts');
         $router->get('/boissons', 'Stock\ProduitsController@getBoissonProducts');
         $router->get('/tournees', 'Stock\ProduitsController@getTourneesProducts');
+        $router->get('disponibles', 'Stock\ProduitsController@inventaire');
+        $router->get('disponibles/departements', 'Stock\ProduitsController@inventaireGeneralDepartement');
+        $router->get('disponibles/{departement}', 'Stock\ProduitsController@inventaireDepartement');
+        $router->get('{departement}', 'Stock\ProduitsController@getProductsDepartement');
         $router->post('new', 'Stock\ProduitsController@insert');
         $router->put('{id}', 'Stock\ProduitsController@update');
         $router->delete('{id}', 'Stock\ProduitsController@delete');
@@ -112,6 +118,7 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
     $router->group(['prefix' => 'achats'], function () use ($router) {
         $router->get('/', 'Stock\AchatsController@getAll');
         $router->get('/compacte', 'Stock\AchatsController@compacte');
+        $router->get('/date/{jour}', 'Stock\AchatsController@getByDate');
         $router->post('new', 'Stock\AchatsController@insert');
         $router->put('{id}', 'Stock\AchatsController@update');
         $router->delete('{id}', 'Stock\AchatsController@delete');
@@ -127,14 +134,15 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
     });
     $router->group(['prefix' => 'demandes'], function () use ($router) {
         $router->get('/', 'Stock\DemandesController@getAll');
-        $router->get('/{departement}', 'Stock\DemandesController@getByDepartement');
-        $router->get('produits/{departement}', 'Stock\DemandesController@getProductsByDepartement');
+        $router->get('/bar', 'Stock\DemandesController@getDemandeBar');
+        $router->get('/restaurant', 'Stock\DemandesController@getDemandeRestau');
+        $router->get('/{id}', 'Stock\DemandesController@getOne');
         $router->get('reject/{id}', 'Stock\DemandesController@reject');
-        $router->get('inventaire/{departement}', 'Stock\DemandesController@inventaire');
-        $router->get('inventaire/buvable/{departement}', 'Stock\DemandesController@inventaireBuvable');
-        $router->get('traitement/{id}', 'Stock\DemandesController@traitement');
-        $router->post('new', 'Stock\DemandesController@insert');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');
+        $router->get('produits/restau', 'Stock\DemandesController@getProductsRestau');
+        $router->get('disponibles/bar', 'Stock\DemandesController@inventaireBar');
+        $router->get('disponibles/restau', 'Stock\DemandesController@inventaireRestau');
+        $router->post('new', 'Stock\DemandesController@insert');
     });
     $router->group(['prefix' => 'sorties'], function () use ($router) {
         $router->get('/', 'Stock\SortiesController@getAll');

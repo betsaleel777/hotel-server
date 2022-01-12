@@ -38,6 +38,8 @@ class Demande extends Model
     const REJETTEE = 'rejettée';
     const LIVREE = 'livrée';
     const CONFIRMEE = 'confirmée';
+    const RESTAURANT = 1;
+    const BAR = 2;
 
     public static function regles(int $id)
     {
@@ -77,6 +79,16 @@ class Demande extends Model
     public function scopeSorties($query)
     {
         return $query->where('status', 'livrée');
+    }
+
+    public function scopePourBar($query)
+    {
+        return $query->where('departement', self::BAR);
+    }
+
+    public function scopePourRestaurant($query)
+    {
+        return $query->where('departement', self::RESTAURANT);
     }
 
     public function departementLinked()

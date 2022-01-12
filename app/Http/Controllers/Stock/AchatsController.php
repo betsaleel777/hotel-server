@@ -52,6 +52,12 @@ class AchatsController extends Controller
         return response()->json(['achat' => $achat]);
     }
 
+    public function getByDate(string $jour)
+    {
+        $achats = Achat::with('produit')->whereDate('created_at', $jour)->get();
+        return response()->json(['achats' => $achats]);
+    }
+
     public function getFromProduit(int $id)
     {
         $achats = Achat::where('ingredient', $id)->orderBy('id', 'DESC')->get();

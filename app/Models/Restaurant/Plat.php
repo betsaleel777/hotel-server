@@ -13,7 +13,7 @@ class Plat extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'image', 'nom', 'categorie', 'description',
+        'code', 'image', 'nom', 'categorie', 'description', 'prix_vente',
     ];
 
     const RULES = [

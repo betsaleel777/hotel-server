@@ -105,143 +105,115 @@ class ProduitsController extends Controller
         return response()->json(['message' => $message, 'produit' => ['id' => $produit->id, 'code' => $produit->code]]);
     }
 
-    public function inventaire()
+    public function getProductsDepartement(int $departement)
     {
-        $inventaireSanslesPlatEtTourneesVendus = DB::select(DB::Raw(
-            "WITH sortie AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
-             INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
-             GROUP BY pe.produit,p.nom,p.code,p.mesure)
-             SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(t.contenance,0) as contenance,IFNULL(SUM(a.quantite-IFNULL(sortie.quantite/2,0)),0) AS disponible,p.prix_vente
-             FROM produits p LEFT JOIN approvisionements a ON a.ingredient=p.id LEFT JOIN tournees t ON t.produit=p.id LEFT JOIN sortie ON sortie.produit = p.id
-             GROUP BY a.ingredient,p.nom,p.code,p.mesure,p.prix_vente,p.id,t.contenance"
-        ));
-        $platsVendus = DB::select(DB::Raw(
-            "with sortie as (select pl.id,pl.nom,sum(pe.quantite) as nombre from plats pl
-             inner join plats_encaissements pe on pe.plat=pl.id group by pe.plat,pl.id,pl.nom)
-             select i.produit,p.code,p.nom,p.mesure,AVG(i.quantite*s.nombre) as quantite from ingredients i inner join produits p on p.id=i.produit
-             inner join sortie s on s.id=i.plat where i.plat in (select pl.id from plats pl inner join plats_encaissements pe on pe.plat=pl.id group by pe.plat,pl.id)
-             group by p.id,p.nom,p.mesure,i.produit,p.code"
-        ));
-        $tourneesVendus = DB::select(DB::Raw(
-            "with encaisse as (select c.nom,c.id,sum(ce.quantite) as nombre from cocktails_encaissements ce inner join cocktails c on c.id = ce.cocktail
-                 group by ce.cocktail,c.nom,c.id)
-                 select p.id as produit,t1.titre as nom,sum(ct.quantite*e.nombre)*t1.nombre*5 as consommation
-                 from cocktails_tournees ct inner join encaisse e on e.id=ct.cocktail inner join tournees t1 on t1.id=ct.tournee
-                 inner join produits p on t1.produit = p.id group by ct.tournee,p.id,t1.titre,t1.nombre
-                 UNION
-                 select p.id as produit,t.titre as nom,sum(te.quantite)*t.nombre*5 as consommation from tournees_encaissements te
-                 inner join tournees t on t.id = te.tournee inner join produits p on t.produit = p.id group by te.tournee,p.id,t.titre,t.nombre"
-        ));
-        $articles = [];
-        $ids = array_column($platsVendus, 'produit');
-        foreach ($inventaireSanslesPlatEtTourneesVendus as $sansPlats) {
-            if (in_array($sansPlats->produit, $ids)) {
-                foreach ($platsVendus as $vendus) {
-                    if ($vendus->produit === $sansPlats->produit) {
-                        $articles[] = (object) [
-                            'produit' => $vendus->produit,
-                            'nom' => $vendus->nom,
-                            'code' => $vendus->code,
-                            'mesure' => $vendus->mesure,
-                            'disponible' => $sansPlats->disponible - $vendus->quantite,
-                        ];
-                        break;
-                    }
-                }
-            } else {
-                $articles[] = $sansPlats;
-            }
-        }
-        $inventaire = [];
-        $ids = array_column($tourneesVendus, 'produit');
-        foreach ($articles as $sansTournee) {
-            if (in_array($sansTournee->produit, $ids)) {
-                foreach ($tourneesVendus as $vendus) {
-                    if ($vendus->produit === $sansTournee->produit) {
-                        $disponibleFloat = $sansTournee->disponible - ($vendus->consommation / $sansTournee->contenance);
-                        $valeurEntiere = intval($disponibleFloat);
-                        $decimalPart = $disponibleFloat - $valeurEntiere;
-                        $resteBouteille = $decimalPart * 100;
-                        $inventaire[] = [
-                            'produit' => $vendus->produit,
-                            'nom' => $sansTournee->nom,
-                            'code' => $sansTournee->code,
-                            'mesure' => $sansTournee->mesure,
-                            'disponible' => $valeurEntiere,
-                            'reste' => round($resteBouteille),
-                        ];
-                        break;
-                    }
-                }
-            } else {
-                $inventaire[] = $sansTournee;
-            }
-        }
-        return response()->json(['inventaire' => $inventaire]);
+        $articles = DB::table('produits_sorties as ps')->select('p.id', 'p.code', 'nom', 'mesure', 'prix_vente')
+            ->join('sorties as s', 's.id', '=', 'ps.sortie')
+            ->join('produits as p', 'p.id', '=', 'ps.produit')
+            ->where('s.departement', $departement, true)
+            ->where('p.pour_plat', false, true)
+            ->where('p.pour_tournee', false)
+            ->get();
+        return response()->json(['articles' => $articles]);
     }
 
-    public function inventaireSortie()
+    public function getChildsBarProducts()
     {
-        $articlesWithoutDelivery = DB::select(DB::Raw(
-            "WITH sortie AS (SELECT pe.produit,p.nom,p.code,p.mesure,SUM(pe.quantite) AS quantite FROM produits_encaissements pe
-             INNER JOIN produits p ON p.id=pe.produit INNER JOIN encaissements e ON e.id = pe.encaissement
-             GROUP BY pe.produit,p.nom,p.code,p.mesure)
-             SELECT p.id as produit,p.nom,p.code,p.mesure,IFNULL(SUM(a.quantite-IFNULL(sortie.quantite/2,0)),0) AS disponible,p.prix_vente
-             FROM produits p LEFT JOIN approvisionements a ON a.ingredient=p.id LEFT JOIN sortie ON sortie.produit = p.id
-             GROUP BY a.ingredient,p.nom,p.code,p.mesure,p.prix_vente,p.id"
+        $tournees = DB::table('tournees')->select('id', 'code', 'titre as nom', 'prix_vente', DB::raw("'tournees' as genre"));
+        $cocktails = DB::table('cocktails')->select('id', 'code', 'nom', 'prix_vente', DB::raw("'cocktails' as genre"));
+        $articles = DB::table('produits_sorties as ps')->select('p.id', 'p.code', 'nom', 'prix_vente', DB::raw("'boissons' as genre"))
+            ->join('sorties as s', 's.id', '=', 'ps.sortie')
+            ->join('produits as p', 'p.id', '=', 'ps.produit')
+            ->where('s.departement', 2, true)
+            ->where('p.pour_plat', false, true)
+            ->where('p.pour_tournee', false)
+            ->union($tournees)->union($cocktails)
+            ->get();
+        return response()->json(['articles' => $articles]);
+    }
+
+    public function getChildsRestoProducts()
+    {
+        $produits = DB::table('produits_sorties as ps')->select('p.id', 'p.code', 'nom', 'prix_vente', DB::raw("'boissons' as genre"))
+            ->join('sorties as s', 's.id', '=', 'ps.sortie')
+            ->join('produits as p', 'p.id', '=', 'ps.produit')
+            ->where('s.departement', 1, true)
+            ->where('p.pour_plat', false, true)
+            ->where('p.pour_tournee', false);
+        $articles = DB::table('plats')->select('id', 'code', 'nom', 'prix_vente', DB::raw("'plats' as genre"))
+            ->union($produits)->get();
+        return response()->json(['articles' => $articles]);
+    }
+
+    public function inventaireGeneralDepartement()
+    {
+        $articles = DB::select(DB::raw("WITH produit_encaisse as (
+with out_tournee as (
+with sortie as (SELECT te.tournee,sum(te.quantite) as sortie,avg(te.prix_vente) as vente from tournees_encaissements te group by te.tournee)
+select p.id as produit,p.mesure,t.id as tournee,p.nom,IFNULL(s.sortie*t.nombre*5,0) as outcontenance,t.contenance
+from tournees t left join sortie s on s.tournee=t.id inner join produits p on p.id=t.produit
+), out_cocktail as (
+with sortie as (SELECT ce.cocktail,sum(ce.quantite) as sortie,avg(ce.prix_vente) as vente from cocktails_encaissements ce group by ce.cocktail),
+drink as (select c.id,ct.quantite,ct.tournee,t.nombre,t.titre,t.contenance from cocktails c inner join cocktails_tournees ct on c.id=ct.cocktail inner join tournees t on t.id=ct.tournee)
+select d.tournee,d.titre,IFNUll(sum(s.sortie*d.quantite*d.nombre*5),0) as outcontenance,d.contenance from drink d left join sortie s on s.cocktail=d.id group by d.tournee
+),
+sortie as (SELECT pe.plat,sum(pe.quantite) as sortie,avg(pe.prix_vente) as vente from plats_encaissements pe group by pe.plat),
+food as (select p.id,i.quantite,p1.mesure,p1.nom,i.produit from plats p inner join ingredients i on p.id=i.plat inner join produits p1 on p1.id=i.produit)
+select ot.produit as id,ot.nom,IFNULL((ot.outcontenance+oc.outcontenance) DIV oc.contenance,0) as outstock,ot.mesure,IFNULL(NULLIF(100-(ot.outcontenance+oc.outcontenance) MOD oc.contenance*100/oc.contenance,100),0) as reste
+from out_tournee ot inner join out_cocktail oc on oc.tournee=ot.tournee
+UNION
+select f.produit as id,f.nom,IFNUll(sum(s.sortie*f.quantite),0) as outstock,f.mesure,0 as reste from food f left join sortie s on s.plat=f.id group by f.produit
+UNION
+select p.id,p.nom,sum(pe.quantite) as outstock,p.mesure,0 as reste from produits p left join produits_encaissements pe on pe.produit=p.id
+inner join encaissements e on e.id=pe.encaissement where p.pour_plat = false and p.pour_tournee = false group by pe.produit
+),produit_demande as (
+select p.id,p.nom,IFNULL(sum(ps.recues),0) as instock,p.mesure from produits_sorties ps right join produits p on ps.produit=p.id
+inner join sorties s on s.id=ps.sortie inner join demandes d on d.id=s.demande where d.status='confirmée' group by ps.produit
+)
+select pd.id,pd.nom,pd.instock,pe.outstock,pd.instock-pe.outstock as disponible,pd.mesure,pe.reste from produit_encaisse pe inner join produit_demande pd on pd.id=pe.id"));
+        return response()->json(['disponibles' => $articles]);
+    }
+
+    public function inventaireDepartement(int $departement)
+    {
+        $articles = DB::select(DB::raw("WITH produit_encaisse as (
+with out_tournee as (
+with sortie as (SELECT te.tournee,sum(te.quantite) as sortie,avg(te.prix_vente) as vente from tournees_encaissements te
+inner join encaissements e on e.id=te.encaissement where e.departement = $departement group by te.tournee)
+select p.id as produit,p.mesure,t.id as tournee,p.nom,IFNULL(s.sortie*t.nombre*5,0) as outcontenance,t.contenance
+from tournees t left join sortie s on s.tournee=t.id inner join produits p on p.id=t.produit
+), out_cocktail as (
+with sortie as (SELECT ce.cocktail,sum(ce.quantite) as sortie,avg(ce.prix_vente) as vente from cocktails_encaissements ce
+inner join encaissements e on e.id=ce.encaissement where e.departement = $departement group by ce.cocktail),
+drink as (select c.id,ct.quantite,ct.tournee,t.nombre,t.titre,t.contenance from cocktails c inner join cocktails_tournees ct on c.id=ct.cocktail inner join tournees t on t.id=ct.tournee)
+select d.tournee,d.titre,IFNUll(sum(s.sortie*d.quantite*d.nombre*5),0) as outcontenance,d.contenance from drink d left join sortie s on s.cocktail=d.id group by d.tournee
+),
+sortie as (SELECT pe.plat,sum(pe.quantite) as sortie,avg(pe.prix_vente) as vente from plats_encaissements pe
+inner join encaissements e on e.id=pe.encaissement where e.departement = $departement group by pe.plat),
+food as (select p.id,i.quantite,p1.mesure,p1.nom,i.produit from plats p inner join ingredients i on p.id=i.plat inner join produits p1 on p1.id=i.produit)
+select ot.produit as id,ot.nom,IFNULL((ot.outcontenance+oc.outcontenance) DIV oc.contenance,0) as outstock,ot.mesure,IFNULL(NULLIF(100-(ot.outcontenance+oc.outcontenance) MOD oc.contenance*100/oc.contenance,100),0) as reste
+from out_tournee ot inner join out_cocktail oc on oc.tournee=ot.tournee
+UNION
+select f.produit as id,f.nom,IFNUll(sum(s.sortie*f.quantite),0) as outstock,f.mesure,0 as reste from food f left join sortie s on s.plat=f.id group by f.produit
+UNION
+select p.id,p.nom,sum(pe.quantite) as outstock,p.mesure,0 as reste from produits p left join produits_encaissements pe on pe.produit=p.id
+inner join encaissements e on e.id=pe.encaissement where p.pour_plat = false and p.pour_tournee = false and e.departement = $departement group by pe.produit
+),produit_demande as (
+select p.id,p.nom,IFNULL(sum(ps.recues),0) as instock,p.mesure from produits_sorties ps right join produits p on ps.produit=p.id
+inner join sorties s on s.id=ps.sortie inner join demandes d on d.id=s.demande where d.status='confirmée' and d.departement = $departement group by ps.produit
+)
+select pd.id,pd.nom,pd.instock,pe.outstock,pd.instock-pe.outstock as disponible,pd.mesure,pe.reste from produit_encaisse pe inner join produit_demande pd on pd.id=pe.id "
         ));
-        $articlesDelivered = DB::select(DB::Raw(
-            "SELECT ps.produit,p.nom,p.code,p.mesure,SUM(ps.recues) AS quantite FROM produits_sorties ps
-             INNER JOIN produits p ON p.id=ps.produit GROUP BY ps.produit,p.nom,p.code,p.mesure"
-        ));
-        $articles = [];
-        $produitsDelivered = array_column($articlesDelivered, 'produit');
-        foreach ($articlesWithoutDelivery as $withoutDelivery) {
-            if (in_array($withoutDelivery->produit, $produitsDelivered)) {
-                foreach ($articlesDelivered as $delivered) {
-                    if ($delivered->produit === $withoutDelivery->produit) {
-                        $articles[] = (object) [
-                            'produit' => $delivered->produit,
-                            'nom' => $delivered->nom,
-                            'code' => $delivered->code,
-                            'mesure' => $delivered->mesure,
-                            'disponible' => $withoutDelivery->disponible - $delivered->quantite,
-                        ];
-                        break;
-                    }
-                }
-            } else {
-                $articles[] = $withoutDelivery;
-            }
-        }
-        $platsVendus = DB::select(DB::Raw(
-            "WITH sortie AS (SELECT pl.id,pl.nom,sum(pe.quantite) AS nombre FROM plats pl
-             INNER JOIN plats_encaissements pe on pe.plat=pl.id GROUP BY pe.plat,pl.id,pl.nom)
-             SELECT i.produit,p.code,p.nom,p.mesure,AVG(i.quantite*s.nombre) AS quantite FROM ingredients i
-             INNER JOIN produits p on p.id=i.produit INNER JOIN sortie s ON s.id=i.plat WHERE i.plat IN
-             (SELECT pl.id FROM plats pl INNER JOIN plats_encaissements pe ON pe.plat=pl.id GROUP BY pe.plat,pl.id)
-             GROUP BY p.id,p.nom,p.mesure,i.produit,p.code"
-        ));
-        $inventaire = [];
-        $ids = array_column($platsVendus, 'produit');
-        foreach ($articles as $sansPlats) {
-            if (in_array($sansPlats->produit, $ids)) {
-                foreach ($platsVendus as $vendus) {
-                    if ($vendus->produit === $sansPlats->produit) {
-                        $inventaire[] = [
-                            'produit' => $vendus->produit,
-                            'nom' => $vendus->nom,
-                            'code' => $vendus->code,
-                            'mesure' => $vendus->mesure,
-                            'disponible' => $sansPlats->disponible - $vendus->quantite,
-                        ];
-                        break;
-                    }
-                }
-            } else {
-                $inventaire[] = $sansPlats;
-            }
-        }
-        return response()->json(['inventaire' => $inventaire]);
+        return response()->json(['disponibles' => $articles]);
+    }
+
+    public function inventaire()
+    {
+        $articles = DB::select(DB::raw('WITH stock AS (SELECT IFNULL(sum(a.prix_achat),0) as revient,IFNULL(sum(a.quantite),0) as entree,p.id,p.nom,p.mesure from approvisionements a
+right join produits p on p.id=a.ingredient GROUP BY p.id),
+sortie as (select IFNULL(sum(ps.recues),0) as sortie,p.id,p.nom,p.mesure from produits_sorties ps
+inner join produits p on p.id=ps.produit group by ps.produit)
+SELECT s1.id,s1.revient,s1.nom,s1.mesure,s1.entree,IFNULL(s2.sortie,0) as sortie,s1.entree-IFNULL(s2.sortie,0) as disponible from stock s1 left join sortie s2 on s1.id=s2.id'));
+        return response()->json(['disponibles' => $articles]);
     }
 }

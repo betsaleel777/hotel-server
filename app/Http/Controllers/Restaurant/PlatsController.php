@@ -34,7 +34,8 @@ class PlatsController extends Controller
         //création du plat
         $rules = array_merge(Plat::RULES, Prix::RULES);
         $this->validate($request, $rules);
-        $plat = new Plat($request->except('image'));
+        $plat = new Plat($request->all());
+        $plat->prix_vente = $request->vente;
         $plat->genererCode();
         $plat->save();
         //creation prix
@@ -46,24 +47,7 @@ class PlatsController extends Controller
             $plat->produits()->attach($ingredient['id'], ['quantite' => $ingredient['quantite'], 'commentaire' => $ingredient['commentaire']]);
         }
         $message = "le Plat $plat->nom a été crée avec succès.";
-        $plat = Plat::with(['prix' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked', 'produits'])->find($plat->id);
-        return response()->json([
-            'message' => $message,
-            'plat' => [
-                'id' => $plat->id,
-                'code' => $plat->code,
-                'nom' => $plat->nom,
-                'categorie' => $plat->categorie,
-                'categorieNom' => $plat->categorieLinked->nom,
-                'image' => $plat->image,
-                'produits' => $plat->produits,
-                'description' => $plat->description,
-                'achat' => $plat->prix[0]->achat,
-                'vente' => $plat->prix[0]->vente,
-            ],
-        ]);
+        return response()->json(['message' => $message]);
     }
 
     public function getOne(int $id)
@@ -79,6 +63,7 @@ class PlatsController extends Controller
         $this->validate($request, $rules);
         $plat = Plat::find($id);
         $plat->nom = $request->nom;
+        $plat->prix_vente = $request->vente;
         $plat->categorie = $request->categorie;
         $plat->description = $request->description;
         $plat->save();
@@ -90,7 +75,6 @@ class PlatsController extends Controller
         if ($dirtyAchat or $dirtyVente) {
             $prix->save();
         }
-
         //modification ingrédients
         $toSync = [];
         foreach ($request->ingredients as $ingredient) {
@@ -98,24 +82,7 @@ class PlatsController extends Controller
         }
         $plat->produits()->sync($toSync);
         $message = "Le plat $plat->nom a  été modifié avec succès.";
-        $plat = Plat::with(['prix' => function ($query) {
-            return $query->orderBy('id', 'DESC');
-        }, 'categorieLinked', 'produits'])->find($plat->id);
-        return response()->json([
-            'message' => $message,
-            'plat' => [
-                'id' => $plat->id,
-                'code' => $plat->code,
-                'nom' => $plat->nom,
-                'categorie' => $plat->categorie,
-                'categorieNom' => $plat->categorieLinked->nom,
-                'image' => $plat->image,
-                'produits' => $plat->produits,
-                'description' => $plat->description,
-                'achat' => $plat->prix[0]->achat,
-                'vente' => $plat->prix[0]->vente,
-            ],
-        ]);
+        return response()->json(['message' => $message]);
 
     }
 
@@ -140,7 +107,6 @@ class PlatsController extends Controller
                 return response()->json(['message' => $message], 400);
             }
         }
-
         $prixAchat = 0;
         foreach ($ids as $id) {
             $achats = Achat::where('ingredient', $id)->orderBy('id', 'DESC')->limit(10)->get();

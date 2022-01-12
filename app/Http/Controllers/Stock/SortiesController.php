@@ -18,24 +18,6 @@ class SortiesController extends Controller
 
     }
 
-    private static function returning(int $id, string $message)
-    {
-        $sortie = Sortie::with('demandelinked', 'departementLinked', 'produits')->find($id);
-        return [
-            'message' => $message,
-            'sortie' => [
-                'id' => $sortie->id,
-                'titre' => $sortie->titre,
-                'status' => $sortie->status,
-                'code' => $sortie->code,
-                'produits' => $sortie->produits,
-                'created_at' => $sortie->created_at,
-                'departement' => $sortie->departementLinked->nom,
-                'demande' => empty($sortie->demandeLinked) ? null : $sortie->demandeLinked->id,
-            ],
-        ];
-    }
-
     public function getAll()
     {
         $sorties = Sortie::with('produits', 'departementLinked', 'demandeLinked')->get();
@@ -52,7 +34,7 @@ class SortiesController extends Controller
             $sortie->produits()->attach($article['id'], ['quantite' => (int) $article['valeur'], 'demandees' => (int) $article['quantite']]);
         }
         $message = "La sortie, $sortie->titre a été crée avec succes.";
-        return response()->json(self::returning($sortie->id, $message));
+        return response()->json(['message' => $message]);
     }
 
     public function confirm(int $id, Request $request)
@@ -78,7 +60,7 @@ class SortiesController extends Controller
             $sortie->produits()->attach($article['produit'], ['quantite' => (int) $article['quantite'], 'demandees' => 0]);
         }
         $message = "La sortie, $sortie->titre a été crée avec succes.";
-        return response()->json(self::returning($sortie->id, $message));
+        return response()->json(['message' => $message]);
     }
 
     public function getFromDemande(int $demande)
