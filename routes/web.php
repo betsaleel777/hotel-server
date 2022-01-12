@@ -100,13 +100,17 @@ $router->group(['prefix' => 'reception'], function () use ($router) {
 $router->group(['prefix' => 'stock'], function () use ($router) {
     $router->group(['prefix' => 'produits'], function () use ($router) {
         $router->get('/', 'Stock\ProduitsController@getAll');
+        $router->get('/bar-childs', 'Stock\ProduitsController@getChildsBarProducts');
+        $router->get('/resto-childs', 'Stock\ProduitsController@getChildsRestoProducts');
         $router->get('/inventaire', 'Stock\ProduitsController@inventaire');
         $router->get('/inventaire/sortie', 'Stock\ProduitsController@inventaireSortie');
         $router->get('/plats', 'Stock\ProduitsController@getPlatProducts');
         $router->get('/boissons', 'Stock\ProduitsController@getBoissonProducts');
         $router->get('/tournees', 'Stock\ProduitsController@getTourneesProducts');
         $router->get('disponibles', 'Stock\ProduitsController@inventaire');
+        $router->get('disponibles/departements', 'Stock\ProduitsController@inventaireGeneralDepartement');
         $router->get('disponibles/{departement}', 'Stock\ProduitsController@inventaireDepartement');
+        $router->get('{departement}', 'Stock\ProduitsController@getProductsDepartement');
         $router->post('new', 'Stock\ProduitsController@insert');
         $router->put('{id}', 'Stock\ProduitsController@update');
         $router->delete('{id}', 'Stock\ProduitsController@delete');
@@ -135,7 +139,6 @@ $router->group(['prefix' => 'stock'], function () use ($router) {
         $router->get('/{id}', 'Stock\DemandesController@getOne');
         $router->get('reject/{id}', 'Stock\DemandesController@reject');
         $router->put('accept/{id}', 'Stock\DemandesController@accept');
-        $router->get('produits/bar', 'Stock\DemandesController@getProductsBar');
         $router->get('produits/restau', 'Stock\DemandesController@getProductsRestau');
         $router->get('disponibles/bar', 'Stock\DemandesController@inventaireBar');
         $router->get('disponibles/restau', 'Stock\DemandesController@inventaireRestau');

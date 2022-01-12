@@ -6,7 +6,6 @@ use App\Models\Parametre\Departement;
 use App\Models\Stock\Demande;
 use App\Models\Stock\Sortie;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DemandesController extends Controller
 {
@@ -85,25 +84,5 @@ class DemandesController extends Controller
         $demande->save();
         $message = "La demande, $demande->titre a été rejetée.";
         return response()->json(['message' => $message]);
-    }
-
-    public function getProductsRestau(int $departement)
-    {
-        $produits = DB::select(DB::raw(
-            "SELECT p.id,p.nom, p.code, p.mesure FROM produits_sorties ps
-             INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
-             WHERE s.departement=1 GROUP BY ps.produit,p.id,p.nom,p.code,p.mesure"
-        ));
-        return response()->json(['produits' => $produits]);
-    }
-
-    public function getProductsBar(int $departement)
-    {
-        $produits = DB::select(DB::raw(
-            "SELECT p.id,p.nom, p.code, p.mesure FROM produits_sorties ps
-             INNER JOIN sorties s ON s.id=ps.sortie INNER JOIN produits p ON p.id=ps.produit
-             WHERE s.departement=2 GROUP BY ps.produit,p.id,p.nom,p.code,p.mesure"
-        ));
-        return response()->json(['produits' => $produits]);
     }
 }

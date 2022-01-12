@@ -49,11 +49,15 @@ class EncaissementsController extends Controller
         $encaissement = new Encaissement($request->all());
         $encaissement->impayer();
         $encaissement->save();
-        foreach ($request->boissons as $article) {
-            $encaissement->produits()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+        if (isset($request->boissons)) {
+            foreach ($request->boissons as $article) {
+                $encaissement->produits()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+            }
         }
-        foreach ($request->plats as $article) {
-            $encaissement->plats()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+        if (isset($request->plats)) {
+            foreach ($request->plats as $article) {
+                $encaissement->plats()->attach($article['id'], ['quantite' => $article['valeur'], 'prix_vente' => $article['prix_vente']]);
+            }
         }
         if (isset($request->tournees)) {
             foreach ($request->tournees as $article) {
