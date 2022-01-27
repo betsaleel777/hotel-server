@@ -13,7 +13,7 @@ class Reservation extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'status', 'prix',
+        'code', 'accompagnants', 'entree', 'sortie', 'destination', 'chambre', 'client', 'status', 'prix', 'categorie',
     ];
     protected $dates = ['entree', 'sortie', 'date_annulation'];
 
@@ -25,6 +25,7 @@ class Reservation extends Model
         'client' => 'required',
     ];
     const RESERVEE = 'reservée';
+    const PAR_SITE = 'par site';
     const ANNULEE = 'annulée';
     const TERMINEE = 'terminée';
 
@@ -52,7 +53,7 @@ class Reservation extends Model
 
     public function scopeReserved($query)
     {
-        return $query->where('status', self::RESERVEE);
+        return $query->where('status', self::RESERVEE)->orWhere('status', self::PAR_SITE);
     }
 
     public function scopeUsed($query)

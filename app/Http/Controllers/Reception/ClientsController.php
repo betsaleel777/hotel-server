@@ -31,6 +31,7 @@ class ClientsController extends Controller
         $this->validate($request, Client::RULES);
         $client = new Client($request->all());
         $client->genererCode();
+        $client->customer();
         $client->statut();
         $client->save();
         $piece = new Piece($request->all());
@@ -50,6 +51,14 @@ class ClientsController extends Controller
         $client = Client::with(['pieces' => function ($query) {
             return $query->orderBy('id', 'DESC');
         }])->find($id);
+        return response()->json(['client' => $client]);
+    }
+
+    public function getOneByCode(string $code)
+    {
+        $client = Client::with(['pieces' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }])->where('code', $code)->first();
         return response()->json(['client' => $client]);
     }
 

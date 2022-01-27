@@ -12,7 +12,7 @@ class Client extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'nom', 'prenom', 'jeune_fille', 'naissance', 'contact', 'pere',
+        'code', 'nom', 'prenom', 'jeune_fille', 'naissance', 'contact', 'pere', 'type',
         'mere', 'departement', 'profession', 'pays', 'domicile', 'email', 'status',
     ];
     const RULES = [
@@ -24,6 +24,8 @@ class Client extends Model
 
     const COMPLET = 'complet';
     const INCOMPLET = 'incomplet';
+    const PROSPECT = 'prospect';
+    const CLIENT = 'client';
 
     public static function regles(int $id)
     {
@@ -40,6 +42,16 @@ class Client extends Model
         $chiffres = '0123456789';
         $lettres = 'abcdefghijklmnopqrstuvwxyz';
         $this->attributes['code'] = strtoupper(str_shuffle(substr(str_shuffle($lettres), 0, 4) . substr(str_shuffle($chiffres), 0, 3)));
+    }
+
+    public function prospect()
+    {
+        return $this->attributes['type'] = self::PROSPECT;
+    }
+
+    public function customer()
+    {
+        return $this->attributes['type'] = self::CLIENT;
     }
 
     public function incomplet()

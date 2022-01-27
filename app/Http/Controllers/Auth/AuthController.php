@@ -47,17 +47,18 @@ class AuthController extends Controller
     {
         $user = User::with('roles')->find(Auth::user()->id);
         if (empty($user->hasRole('Super Admin'))) {
-            $permissions = $user->getPermissionsViaRoles();
+            $permissions = $user->getAllPermissions();
         } else {
             $permissions = Permission::get();
         }
         $permissionsNames = array_column($permissions->all(), 'name');
+        $rolesNames = $user->getRoleNames();
         $userInfos = [
             'id' => $user->id,
             'email' => $user->email,
             'name' => $user->name,
             'status' => $user->status,
-            'roles' => $user->roles,
+            'roles' => $rolesNames,
             'permissions' => $permissionsNames,
         ];
         return response()->json($userInfos);
