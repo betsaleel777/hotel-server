@@ -19,7 +19,22 @@ class CategoriesController extends Controller
 
     public function getAll()
     {
-        $categories = CategorieChambre::select('id', 'nom')->get();
+        $categories = CategorieChambre::select('id', 'nom', 'description')->get();
+        return response()->json(['categories' => $categories]);
+    }
+
+    public function getCategories()
+    {
+        $datas = CategorieChambre::with('chambres')->get();
+        $categories = $datas->map(function ($categorie) {
+            return collect([
+                'id' => $categorie->id,
+                'nom' => $categorie->nom,
+                'max' => $categorie->chambres->max('prix_vente') ?? 0,
+                'min' => $categorie->chambres->min('prix_vente') ?? 0,
+            ]);
+
+        })->where('max', '>', 0);
         return response()->json(['categories' => $categories]);
     }
 

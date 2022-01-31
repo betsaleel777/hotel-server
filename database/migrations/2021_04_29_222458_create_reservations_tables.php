@@ -19,7 +19,7 @@ class CreateReservationsTables extends Migration
             $table->dateTime('entree');
             $table->dateTime('sortie');
             $table->string('destination', 50)->nullable();
-            $table->unsignedBigInteger('chambre');
+            $table->unsignedBigInteger('chambre')->nullable();
             $table->unsignedBigInteger('client');
             $table->timestamps();
 

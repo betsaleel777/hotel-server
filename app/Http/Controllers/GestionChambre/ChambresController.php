@@ -28,6 +28,14 @@ class ChambresController extends Controller
         return response()->json(['chambres' => $chambres]);
     }
 
+    public function getByCategorie(int $categorie)
+    {
+        $chambres = Chambre::with(['prixList' => function ($query) {
+            return $query->orderBy('id', 'DESC');
+        }, 'categorieLinked'])->where('categorie', $categorie)->get();
+        return response()->json(['chambres' => $chambres]);
+    }
+
     public function getReservation(string $debut, string $fin)
     {
         $chambresPrises = [];

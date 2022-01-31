@@ -9,7 +9,7 @@ class CategorieChambre extends Model
 {
     use SoftDeletes;
     protected $fillable = [
-        'nom',
+        'nom', 'description',
     ];
 
     protected $table = 'categories_chambres';
